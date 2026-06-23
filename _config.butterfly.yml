@@ -29,14 +29,21 @@ comments:
 # Giscus Configuration
 # https://giscus.app/
 giscus:
-  repo: yin2hao/Myblogs
-  repo_id:
-  category_id:
-  category:
+  repo: yin2hao/myblog
+  repo_id: R_kgDORF397w
+  category_id: DIC_kwDORF39784C_vHb
+  category: Announcements
   light_theme: light
   dark_theme: dark
   js:
   option:
+    mapping: pathname
+    strict: 1
+    reactionsEnabled: 1
+    emitMetadata: 0
+    inputPosition: top
+    lang: zh-CN
+    loading: lazy
 
 # --------------------------------------
 # Social Media
