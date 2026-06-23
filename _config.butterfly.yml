@@ -1,0 +1,129 @@
+# ======================================
+# Butterfly Theme Configuration
+# ======================================
+
+# --------------------------------------
+# Navigation Settings
+# --------------------------------------
+nav:
+  display_title: true
+  fixed: false
+
+menu:
+  首页: / || fas fa-home
+  归档: /archives/ || fas fa-archive
+  标签: /tags/ || fas fa-tags
+  分类: /categories/ || fas fa-folder-open
+
+# --------------------------------------
+# Comments System - Giscus
+# --------------------------------------
+comments:
+  # Giscus 作为评论系统
+  use: Giscus
+  text: true
+  lazyload: false
+  count: true
+  card_post_count: false
+
+# Giscus Configuration
+# https://giscus.app/
+giscus:
+  repo: yin2hao/Myblogs
+  repo_id:
+  category_id:
+  category:
+  light_theme: light
+  dark_theme: dark
+  js:
+  option:
+
+# --------------------------------------
+# Social Media
+# --------------------------------------
+social:
+  fab fa-github: https://github.com/yin2hao || Github || '#24292e'
+
+# --------------------------------------
+# Image Settings
+# --------------------------------------
+avatar:
+  img:
+  effect: false
+
+# --------------------------------------
+# Footer Settings
+# --------------------------------------
+footer:
+  owner:
+    enable: true
+    since: 2026
+  copyright:
+    enable: true
+    version: true
+  custom_text:
+
+# --------------------------------------
+# Aside Settings
+# --------------------------------------
+aside:
+  enable: true
+  hide: false
+  button: true
+  mobile: true
+  position: right
+  card_author:
+    enable: true
+    description:
+    button:
+      enable: true
+      icon: fab fa-github
+      text: Follow Me
+      link: https://github.com/yin2hao
+  card_announcement:
+    enable: true
+    content: 欢迎来到我的博客！
+  card_recent_post:
+    enable: true
+    limit: 5
+  card_categories:
+    enable: true
+    limit: 8
+  card_tags:
+    enable: true
+    limit: 40
+    color: false
+  card_archives:
+    enable: true
+    type: monthly
+    format: MMMM YYYY
+    order: -1
+    limit: 8
+  card_webinfo:
+    enable: true
+    post_count: true
+    last_push_date: true
+
+# --------------------------------------
+# Dark Mode
+# --------------------------------------
+darkmode:
+  enable: true
+  button: true
+  autoChangeMode: false
+
+# --------------------------------------
+# Other Settings
+# --------------------------------------
+busuanzi:
+  site_uv: true
+  site_pv: true
+  page_pv: true
+
+search:
+  use:
+  placeholder:
+
+# Beautify
+beautify:
+  enable: false
