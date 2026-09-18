@@ -2,7 +2,7 @@
 layout: layout
 title: docker pull命令通过镜像源下载偶发过慢问题
 date: 2026-08-23 17:03:54
-tags:
+tags: docker
 ---
 
 ### 背景
