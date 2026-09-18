@@ -1,0 +1,389 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>docker pull命令通过镜像源下载偶发过慢问题 | yin2hao's Blog</title><meta name="author" content="yin2hao"><meta name="copyright" content="yin2hao"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="背景现在有两台服务器，一台是位于中国成都内地的 ESC 实例 A(20M带宽) 另外一台是位于吉隆坡的轻量应用服务器 B （峰值200M带宽） 在这之前，我比较喜欢使用 1Panel 面板可视化管理服务器。1Panel 面板是基于 Docker 的管理面板，它的应用体系基本依靠 Docker Compose。 1Panel 面板官方提供了一个应用商城。该应用商城分为两个部分，一个是官方提供的应用，">
+<meta property="og:type" content="website">
+<meta property="og:title" content="docker pull命令通过镜像源下载偶发过慢问题">
+<meta property="og:url" content="https://blog.yin2hao.dev/2026/08/23/docker-pull%E5%91%BD%E4%BB%A4%E9%80%9A%E8%BF%87%E9%95%9C%E5%83%8F%E6%BA%90%E4%B8%8B%E8%BD%BD%E5%81%B6%E5%8F%91%E8%BF%87%E6%85%A2%E9%97%AE%E9%A2%98/index.html">
+<meta property="og:site_name" content="yin2hao&#39;s Blog">
+<meta property="og:description" content="背景现在有两台服务器，一台是位于中国成都内地的 ESC 实例 A(20M带宽) 另外一台是位于吉隆坡的轻量应用服务器 B （峰值200M带宽） 在这之前，我比较喜欢使用 1Panel 面板可视化管理服务器。1Panel 面板是基于 Docker 的管理面板，它的应用体系基本依靠 Docker Compose。 1Panel 面板官方提供了一个应用商城。该应用商城分为两个部分，一个是官方提供的应用，">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://a1.ax1x.com/2026/08/23/OMMKr.png">
+<meta property="og:image" content="https://a1.ax1x.com/2026/08/23/OMJQ4.png">
+<meta property="og:image" content="https://a1.ax1x.com/2026/08/23/OMzAQ.png">
+<meta property="og:image" content="https://a1.ax1x.com/2026/08/23/OMdEJ.png">
+<meta property="og:image" content="https://a1.ax1x.com/2026/08/23/OMxzK.png">
+<meta property="og:image" content="https://a1.ax1x.com/2026/08/23/OMT1Z.png">
+<meta property="og:image" content="https://a1.ax1x.com/2026/08/23/OMc8c.png">
+<meta property="og:image" content="https://a1.ax1x.com/2026/08/23/OM03O.png">
+<meta property="og:image" content="https://a1.ax1x.com/2026/08/23/OM2om.png">
+<meta property="og:image" content="https://a1.ax1x.com/2026/08/23/OMXKl.png">
+<meta property="og:image" content="https://a1.ax1x.com/2026/08/23/OMvgp.png">
+<meta property="article:published_time" content="2026-08-23T09:03:54.000Z">
+<meta property="article:modified_time" content="2026-09-18T13:57:45.197Z">
+<meta property="article:author" content="yin2hao">
+<meta property="article:tag" content="docker">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://a1.ax1x.com/2026/08/23/OMMKr.png"><script type="application/ld+json"></script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://blog.yin2hao.dev/2026/08/23/docker-pull%E5%91%BD%E4%BB%A4%E9%80%9A%E8%BF%87%E9%95%9C%E5%83%8F%E6%BA%90%E4%B8%8B%E8%BD%BD%E5%81%B6%E5%8F%91%E8%BF%87%E6%85%A2%E9%97%AE%E9%A2%98/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=5.7.0"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.3.1/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        const data = { value }
+
+        if (ttl != null) {
+          data.expiry = Date.now() + ttl * 86400000
+        }
+
+        localStorage.setItem(key, JSON.stringify(data))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return
+
+        try {
+          const data = JSON.parse(itemStr)
+
+          if (data.expiry && Date.now() > data.expiry) {
+            localStorage.removeItem(key)
+            return
+          }
+
+          return data.value
+        } catch {
+          localStorage.removeItem(key)
+        }
+      }
+    }
+
+    const scriptCache = new Map()
+    const cssCache = new Map()
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => {
+        if (scriptCache.has(url)) {
+          return scriptCache.get(url)
+        }
+
+        const promise = new Promise((resolve, reject) => {
+          const script = document.createElement('script')
+
+          script.src = url
+          script.async = true
+
+          for (const key in attr) {
+            script.setAttribute(key, attr[key])
+          }
+
+          script.onload = resolve
+          script.onerror = reject
+
+          document.head.appendChild(script)
+        })
+
+        scriptCache.set(url, promise)
+
+        return promise
+      },
+      getCSS: (url, id) => {
+        if (cssCache.has(url)) {
+          return cssCache.get(url)
+        }
+
+        const promise = new Promise((resolve, reject) => {
+          const link = document.createElement('link')
+
+          link.rel = 'stylesheet'
+          link.href = url
+
+          if (id) {
+            link.id = id
+          }
+
+          link.onload = resolve
+          link.onerror = reject
+
+          document.head.appendChild(link)
+        })
+
+        cssCache.set(url, promise)
+
+        return promise
+      },
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const metaThemeColor = document.querySelector('meta[name="theme-color"]')
+      const activateDarkMode = () => {
+        document.documentElement.dataset.theme = 'dark'
+        if (metaThemeColor !== null) {
+          metaThemeColor.setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.dataset.theme = 'light'
+        if (metaThemeColor !== null) {
+          metaThemeColor.setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.13.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'docker pull命令通过镜像源下载偶发过慢问题',
+  isHighlightShrink: false,
+  isToc: false,
+  pageType: 'layout'
+}</script><meta name="generator" content="Hexo 8.1.2"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/null" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">5</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">1</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">0</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div></div></div></div><div class="page" id="body-wrap"><header class="not-home-page" id="page-header"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">yin2hao's Blog</span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="page-site-info"><h1 id="site-title">docker pull命令通过镜像源下载偶发过慢问题</h1></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h3 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h3><p>现在有两台服务器，一台是位于中国成都内地的 ESC 实例 A(20M带宽)</p>
+<p>另外一台是位于吉隆坡的轻量应用服务器 B （峰值200M带宽）</p>
+<p>在这之前，我比较喜欢使用 1Panel 面板可视化管理服务器。1Panel 面板是基于 Docker 的管理面板，它的应用体系基本依靠 Docker Compose。</p>
+<p>1Panel 面板官方提供了一个应用商城。该应用商城分为两个部分，一个是官方提供的应用，另外一个部分是可以从本地的目录中同步应用。鉴于官方提供的应用较少且覆盖不完整，我配置了<a target="_blank" rel="noopener" href="https://github.com/QYG2297248353/appstore-1panel">第三方应用商城</a>以及个人的 Docker Compose 编排，每天定时更新。</p>
+<p><img src="https://a1.ax1x.com/2026/08/23/OMMKr.png" alt="OMMKr.png"></p>
+<p>由于新买的服务器在中国成都，受到网络条件制约，目前国内主流的 Docker 镜像源要么收费，要么相对不稳定，因此，我在位于吉隆坡的服务器 B 使用 Docker 官方的 <a target="_blank" rel="noopener" href="https://hub.docker.com/_/registry">Registry</a> 搭建了简单的 Docker 镜像源，当接到拉取请求时，吉隆坡的服务器先从 DockerHub 拉取镜像到本地，再发送给请求者，镜像本机缓存 24 小时。</p>
+<p><img src="https://a1.ax1x.com/2026/08/23/OMJQ4.png" alt="OMJQ4.png"></p>
+<p>准备安装的 <code>astrbot</code> + <code>napcat</code> 的容器编排如下。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><span class="line">networks:</span><br><span class="line">  1panel-network:</span><br><span class="line">    external: <span class="literal">true</span></span><br><span class="line"></span><br><span class="line">services:</span><br><span class="line">  napcat:</span><br><span class="line">    image: mlikiowa/napcat-docker:v4.18.18</span><br><span class="line">    container_name: napcat-<span class="variable">$&#123;CONTAINER_NAME&#125;</span></span><br><span class="line">    restart: always</span><br><span class="line">    networks:</span><br><span class="line">      - 1panel-network</span><br><span class="line">    ports:</span><br><span class="line">      - <span class="variable">$&#123;PANEL_APP_PORT_NAPCAT&#125;</span>:6099</span><br><span class="line">    mac_address: <span class="variable">$&#123;NAPCAT_MAC_ADDRESS:-02:42:ac:11:00:02&#125;</span></span><br><span class="line">    env_file:</span><br><span class="line">      - <span class="variable">$&#123;GLOBAL_ENV_FILE:-/etc/1panel/envs/global.env&#125;</span></span><br><span class="line">      - <span class="variable">$&#123;ENV_FILE:-/etc/1panel/envs/default.env&#125;</span></span><br><span class="line">    volumes:</span><br><span class="line">      - <span class="variable">$&#123;ASTRBOT_ROOT_PATH&#125;</span>/data:/AstrBot/data</span><br><span class="line">      - <span class="variable">$&#123;ASTRBOT_ROOT_PATH&#125;</span>/ntqq:/app/.config/QQ</span><br><span class="line">    environment:</span><br><span class="line">      - TZ=Asia/Shanghai</span><br><span class="line">      - MODE=astrbot</span><br><span class="line">      - NAPCAT_UID=<span class="variable">$&#123;NAPCAT_UID:-1000&#125;</span></span><br><span class="line">      - NAPCAT_GID=<span class="variable">$&#123;NAPCAT_GID:-1000&#125;</span></span><br><span class="line">  astrbot:</span><br><span class="line">    image: soulter/astrbot:v4.27.2</span><br><span class="line">    container_name: <span class="variable">$&#123;CONTAINER_NAME&#125;</span></span><br><span class="line">    labels:</span><br><span class="line">      createdBy: <span class="string">&quot;Apps&quot;</span></span><br><span class="line">    restart: always</span><br><span class="line">    networks:</span><br><span class="line">      - 1panel-network</span><br><span class="line">    ports:</span><br><span class="line">      - <span class="variable">$&#123;PANEL_APP_PORT_HTTP&#125;</span>:6185</span><br><span class="line">      - <span class="variable">$&#123;PANEL_APP_PORT_QQ_WH&#125;</span>:6199</span><br><span class="line">      - <span class="variable">$&#123;PANEL_APP_PORT_QQ_API&#125;</span>:6196</span><br><span class="line">      - <span class="variable">$&#123;PANEL_APP_PORT_WECOM&#125;</span>:6195</span><br><span class="line">      - <span class="variable">$&#123;PANEL_APP_PORT_WECHAT&#125;</span>:11451</span><br><span class="line">    env_file:</span><br><span class="line">      - <span class="variable">$&#123;GLOBAL_ENV_FILE:-/etc/1panel/envs/global.env&#125;</span></span><br><span class="line">      - <span class="variable">$&#123;ENV_FILE:-/etc/1panel/envs/default.env&#125;</span></span><br><span class="line">    volumes:</span><br><span class="line">      - /etc/localtime:/etc/localtime:ro</span><br><span class="line">      - <span class="variable">$&#123;ASTRBOT_ROOT_PATH&#125;</span>/data:/AstrBot/data</span><br><span class="line">      - <span class="variable">$&#123;ASTRBOT_ROOT_PATH&#125;</span>/ntqq:/app/.config/QQ</span><br><span class="line">      - <span class="variable">$&#123;ASTRBOT_ROOT_PATH&#125;</span>/napcat/config:/app/napcat/config</span><br><span class="line">    environment:</span><br><span class="line">      - TZ=Asia/Shanghai</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>可以看到，这一个编排中有两个容器</p>
+<p>一个容器是<code>mlikiowa/napcat-docker:v4.18.18</code> </p>
+<p>另外一个容器是<code>soulter/astrbot:v4.27.2</code></p>
+<h3 id="问题出现"><a href="#问题出现" class="headerlink" title="问题出现"></a>问题出现</h3><p>我在中国成都的内地服务器中从 1Panel 的应用商城安装，底层仍然是容器编排，暴露出的信息如下</p>
+<p><img src="https://a1.ax1x.com/2026/08/23/OMzAQ.png" alt="OMzAQ.png"></p>
+<p><img src="https://a1.ax1x.com/2026/08/23/OMdEJ.png" alt="OMdEJ.png"></p>
+<p>拉取的实时网络:</p>
+<p><img src="https://a1.ax1x.com/2026/08/23/OMxzK.png" alt="OMxzK.png"></p>
+<p>可以看到实时的网速只有 75KB 每秒左右，很慢</p>
+<p>但是拉取其他的镜像，比如 nacos</p>
+<p><img src="https://a1.ax1x.com/2026/08/23/OMT1Z.png" alt="OMT1Z.png"></p>
+<p>速度就是正常的 10MB&#x2F;s。因此应该不是成都服务器的问题（但是我服务器不是只有 20M 吗？服务器购买的时候的带宽，应该是指的出口带宽，入口带宽应该是动态的。但根据<a target="_blank" rel="noopener" href="https://help.aliyun.com/zh/ecs/user-guide/network-bandwidth">阿里云官方文档</a>，出口带宽理论应该与入口带宽保持一致，下限为 20 Mbps）</p>
+<p>手动运行 <code>docker compose pull</code> 命令拉取镜像</p>
+<p><img src="https://a1.ax1x.com/2026/08/23/OMc8c.png" alt="OMc8c.png"></p>
+<p><img src="https://a1.ax1x.com/2026/08/23/OM03O.png" alt="OM03O.png"></p>
+<p>12.05 MB&#x2F;s，拉取速度一切正常</p>
+<p>会不会是两台服务器之间通信的问题？在此使用 iperf3 进行服务器间测速：</p>
+<p><img src="https://a1.ax1x.com/2026/08/23/OM2om.png" alt="OM2om.png"></p>
+<p>可见两台服务器之间的连接速度是一切正常的，达到了（甚至超过了）理论峰值速度。因此理论上应该不是两台服务器之间的通信速率问题。</p>
+<p>那可能是 1panel 面板的问题。在此之前， 1panel 面板在我的理解中一直是依赖 docker，通过 <code>Docker compose </code>编排安装的应用。有没有可能它在里面添加了自己的小巧思，修改了部分逻辑呢？<br>感谢万能的 <a target="_blank" rel="noopener" href="https://chatgpt.com/share/6a82c7e6-d32c-83ea-91e6-66227023ddc7">chatgpt</a> ，直接阅读 1panel 面板的源码和 pr 分析相关的信息，让我这个完全不会 go 语言的也能完成分析</p>
+<p>简单来说，在服务器中，docker 可以简单理解成 <code>docker engine</code> 和 <code>docker cli</code>两部分。其中直接在命令行输入的 <code>docker pull</code> 命令，会唤起 <code>docker cli</code>，<code>docker cli</code>再通过 API 向 <code>docker engine</code> 发送拉取指令，由 <code>docker engine</code> 实际拉取。在拉取过程之中，<code>docker engine</code> 会实时向 <code>docker cli</code> 反馈下载进度，并打印在控制台中。</p>
+<p>使用 <code>docker compose pull</code> 指令手动拉取目标编排，<code>docker cli</code> 会默认同时拉取两个镜像，两个镜像的拉取之间是并行的。</p>
+<p>如果使用 1panel 安装应用，对于一个包含多个镜像的 docker compose 编排，面板会先解析其中包含的镜像，再通过串行的方式逐个拉取。</p>
+<p>比如当前编排中两个镜像，<code>mlikiowa/napcat-docker:v4.18.18</code> 和<code>soulter/astrbot:v4.27.2</code>，面板会先拉取<code>mlikiowa/napcat-docker:v4.18.18</code> ，在该镜像拉取完成之后再开始拉取<code>soulter/astrbot:v4.27.2</code>。</p>
+<p>与 AI 求证，并且简单翻阅源码之后，发现面板并非直接简单使用 <code>docker pull</code> 命令拉取，而是直接与 <code>docker engine</code> 通信。更准确的讲，在 <a target="_blank" rel="noopener" href="https://github.com/1Panel-dev/1Panel/pull/7955/">PR#7955</a> 之前，Docker 在拉取镜像的时候，是通过 docker cli 运行 <code>docker pull</code> 命令拉取的。但在该修改之后，面板会直接与 docker engine 通信，通过 API 拉取。</p>
+<p><del>这样怀疑范围又小了一部分。在对整体拉取速度进行统计之后，就确定问题出现于~~~~&#96;mlikiowa&#x2F;napcat-docker:v4.18.18&#96;~~~~ 上。</del></p>
+<p>在进行更加细致的观察后，发现并不是单一容器的问题，而是对于某些镜像的某些特定 layer 存在下载速度过慢的问题而不是局限于整体的容器拉取速度。</p>
+<p>于是手动修改配置文件，将 Docker 的同时下载的 Layer 数量改为 1 (在默认情况下，Docker 会同时下载的 Layer 数量为 3）</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">     <span class="attr">&quot;registry-mirrors&quot;:</span> [</span><br><span class="line">          <span class="string">&quot;https://docker.***.***&quot;</span></span><br><span class="line">     ],</span><br><span class="line">    <span class="attr">&quot;max-concurrent-downloads&quot;:</span> <span class="number">1</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>此后再在服务器和本机上不同的环境下进行拉取修改测试</p>
+<p>全量拉取比较各个 layer 拉取速度后发现是两个镜像的这两个 Layer 拉起速度较慢。</p>
+<p>Napcat: 99adaac412a4</p>
+<p>Astrbot: 1284b755ec6a</p>
+<p>拿 napcat 的该 layer 测试，直接使用 <code>curl</code> 命令，手动拉取源数据并指定下载。</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">curl</span> <span class="string">-s</span> <span class="string">\</span></span><br><span class="line">  <span class="string">-H</span> <span class="string">&#x27;Accept: application/vnd.docker.distribution.manifest.v2+json&#x27;</span> <span class="string">\</span></span><br><span class="line">  <span class="string">https://docker.***.***/v2/mlikiowa/napcat-docker/manifests/v4.18.18</span> <span class="string">\</span></span><br><span class="line">  <span class="string">|</span> <span class="string">jq</span></span><br></pre></td></tr></table></figure>
+
+<p>得到</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;schemaVersion&quot;</span><span class="punctuation">:</span> <span class="number">2</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;mediaType&quot;</span><span class="punctuation">:</span> <span class="string">&quot;application/vnd.oci.image.index.v1+json&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;manifests&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">    <span class="punctuation">&#123;</span></span><br><span class="line">      <span class="attr">&quot;mediaType&quot;</span><span class="punctuation">:</span> <span class="string">&quot;application/vnd.oci.image.manifest.v1+json&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;digest&quot;</span><span class="punctuation">:</span> <span class="string">&quot;sha256:cbcfebdc2656f7f7ff388ddfe0762b192335572a6e2bdfb576aa4246edb19943&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;size&quot;</span><span class="punctuation">:</span> <span class="number">1628</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;platform&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">        <span class="attr">&quot;architecture&quot;</span><span class="punctuation">:</span> <span class="string">&quot;amd64&quot;</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">&quot;os&quot;</span><span class="punctuation">:</span> <span class="string">&quot;linux&quot;</span></span><br><span class="line">      <span class="punctuation">&#125;</span></span><br><span class="line">    <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="punctuation">&#123;</span></span><br><span class="line">      <span class="attr">&quot;mediaType&quot;</span><span class="punctuation">:</span> <span class="string">&quot;application/vnd.oci.image.manifest.v1+json&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;digest&quot;</span><span class="punctuation">:</span> <span class="string">&quot;sha256:9478065f1ca882a1a73dffdec958f947f24f8086d18548f27b37b432c21c5ace&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;size&quot;</span><span class="punctuation">:</span> <span class="number">1628</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;platform&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">        <span class="attr">&quot;architecture&quot;</span><span class="punctuation">:</span> <span class="string">&quot;arm64&quot;</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">&quot;os&quot;</span><span class="punctuation">:</span> <span class="string">&quot;linux&quot;</span></span><br><span class="line">      <span class="punctuation">&#125;</span></span><br><span class="line">    <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="punctuation">&#123;</span></span><br><span class="line">      <span class="attr">&quot;mediaType&quot;</span><span class="punctuation">:</span> <span class="string">&quot;application/vnd.oci.image.manifest.v1+json&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;digest&quot;</span><span class="punctuation">:</span> <span class="string">&quot;sha256:9202418e2e6946c5bea024374a62a7d79ae63ab947284692c94bf47ec5b0ae08&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;size&quot;</span><span class="punctuation">:</span> <span class="number">564</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;annotations&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">        <span class="attr">&quot;vnd.docker.reference.digest&quot;</span><span class="punctuation">:</span> <span class="string">&quot;sha256:cbcfebdc2656f7f7ff388ddfe0762b192335572a6e2bdfb576aa4246edb19943&quot;</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">&quot;vnd.docker.reference.type&quot;</span><span class="punctuation">:</span> <span class="string">&quot;attestation-manifest&quot;</span></span><br><span class="line">      <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;platform&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">        <span class="attr">&quot;architecture&quot;</span><span class="punctuation">:</span> <span class="string">&quot;unknown&quot;</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">&quot;os&quot;</span><span class="punctuation">:</span> <span class="string">&quot;unknown&quot;</span></span><br><span class="line">      <span class="punctuation">&#125;</span></span><br><span class="line">    <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="punctuation">&#123;</span></span><br><span class="line">      <span class="attr">&quot;mediaType&quot;</span><span class="punctuation">:</span> <span class="string">&quot;application/vnd.oci.image.manifest.v1+json&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;digest&quot;</span><span class="punctuation">:</span> <span class="string">&quot;sha256:a762cef58e8e48b6064f42f224e447f3110dd164d8fbb0613b49e5324848b7d4&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;size&quot;</span><span class="punctuation">:</span> <span class="number">564</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;annotations&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">        <span class="attr">&quot;vnd.docker.reference.digest&quot;</span><span class="punctuation">:</span> <span class="string">&quot;sha256:9478065f1ca882a1a73dffdec958f947f24f8086d18548f27b37b432c21c5ace&quot;</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">&quot;vnd.docker.reference.type&quot;</span><span class="punctuation">:</span> <span class="string">&quot;attestation-manifest&quot;</span></span><br><span class="line">      <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;platform&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">        <span class="attr">&quot;architecture&quot;</span><span class="punctuation">:</span> <span class="string">&quot;unknown&quot;</span><span class="punctuation">,</span></span><br><span class="line">        <span class="attr">&quot;os&quot;</span><span class="punctuation">:</span> <span class="string">&quot;unknown&quot;</span></span><br><span class="line">      <span class="punctuation">&#125;</span></span><br><span class="line">    <span class="punctuation">&#125;</span></span><br><span class="line">  <span class="punctuation">]</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p>这是napcat的多架构镜像顶层索引，因为服务器是 X86 架构，因此选用 architecture amd64，也就是</p>
+<blockquote>
+<p>“digest”: “sha256:cbcfebdc2656f7f7ff388ddfe0762b192335572a6e2bdfb576aa4246edb19943”</p>
+</blockquote>
+<p>再获取对应镜像的layer信息</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">curl</span> <span class="string">-s</span> <span class="string">\</span></span><br><span class="line">  <span class="string">-H</span> <span class="string">&#x27;Accept: application/vnd.oci.image.manifest.v1+json&#x27;</span> <span class="string">\</span></span><br><span class="line">  <span class="string">https://docker.***.***/v2/mlikiowa/napcat-docker/manifests/sha256:cbcfebdc2656f7f7ff388ddfe0762b192335572a6e2bdfb576aa4246edb19943</span> <span class="string">\</span></span><br><span class="line">  <span class="string">|</span> <span class="string">jq</span></span><br></pre></td></tr></table></figure>
+
+<p>得到</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;schemaVersion&quot;</span><span class="punctuation">:</span> <span class="number">2</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;mediaType&quot;</span><span class="punctuation">:</span> <span class="string">&quot;application/vnd.oci.image.manifest.v1+json&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;config&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">    <span class="attr">&quot;mediaType&quot;</span><span class="punctuation">:</span> <span class="string">&quot;application/vnd.oci.image.config.v1+json&quot;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;digest&quot;</span><span class="punctuation">:</span> <span class="string">&quot;sha256:0f76fde5ecb3d738f970e8b6fafff8a151540907fde308221e781b87b0992b94&quot;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;size&quot;</span><span class="punctuation">:</span> <span class="number">5110</span></span><br><span class="line">  <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;layers&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">    <span class="punctuation">&#123;</span></span><br><span class="line">      <span class="attr">&quot;mediaType&quot;</span><span class="punctuation">:</span> <span class="string">&quot;application/vnd.oci.image.layer.v1.tar+gzip&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;digest&quot;</span><span class="punctuation">:</span> <span class="string">&quot;sha256:6414378b647780fee8fd903ddb9541d134a1947ce092d08bdeb23a54cb3684ac&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;size&quot;</span><span class="punctuation">:</span> <span class="number">29535688</span></span><br><span class="line">    <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="punctuation">&#123;</span></span><br><span class="line">      <span class="attr">&quot;mediaType&quot;</span><span class="punctuation">:</span> <span class="string">&quot;application/vnd.oci.image.layer.v1.tar+gzip&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;digest&quot;</span><span class="punctuation">:</span> <span class="string">&quot;sha256:490f82e472ca8db02fef02d020d6cadeb58dea37642c5d42814fa9819fe58eb6&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;size&quot;</span><span class="punctuation">:</span> <span class="number">271963756</span></span><br><span class="line">    <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="punctuation">&#123;</span></span><br><span class="line">      <span class="attr">&quot;mediaType&quot;</span><span class="punctuation">:</span> <span class="string">&quot;application/vnd.oci.image.layer.v1.tar+gzip&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;digest&quot;</span><span class="punctuation">:</span> <span class="string">&quot;sha256:7c7b5cd01343fbc3495bf320ebcc9a413a180551d49146885cfbe6e1426d6b21&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;size&quot;</span><span class="punctuation">:</span> <span class="number">1412</span></span><br><span class="line">    <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="punctuation">&#123;</span></span><br><span class="line">      <span class="attr">&quot;mediaType&quot;</span><span class="punctuation">:</span> <span class="string">&quot;application/vnd.oci.image.layer.v1.tar+gzip&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;digest&quot;</span><span class="punctuation">:</span> <span class="string">&quot;sha256:47e443e2d71a3cd56adf54144a2b7d13e7791fdb17b965cea974b3f9bbf5791a&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;size&quot;</span><span class="punctuation">:</span> <span class="number">93</span></span><br><span class="line">    <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="punctuation">&#123;</span></span><br><span class="line">      <span class="attr">&quot;mediaType&quot;</span><span class="punctuation">:</span> <span class="string">&quot;application/vnd.oci.image.layer.v1.tar+gzip&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;digest&quot;</span><span class="punctuation">:</span> <span class="string">&quot;sha256:81c066f39089ddcace93effcec25665495e3d4d7ca7896d98eea4d9cf4dbf29b&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;size&quot;</span><span class="punctuation">:</span> <span class="number">28791179</span></span><br><span class="line">    <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="punctuation">&#123;</span></span><br><span class="line">      <span class="attr">&quot;mediaType&quot;</span><span class="punctuation">:</span> <span class="string">&quot;application/vnd.oci.image.layer.v1.tar+gzip&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;digest&quot;</span><span class="punctuation">:</span> <span class="string">&quot;sha256:99adaac412a4a27d8281d9004e797149f3d6f7cb5e8fb51bc073c31b2361eb49&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;size&quot;</span><span class="punctuation">:</span> <span class="number">267101944</span></span><br><span class="line">    <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="punctuation">&#123;</span></span><br><span class="line">      <span class="attr">&quot;mediaType&quot;</span><span class="punctuation">:</span> <span class="string">&quot;application/vnd.oci.image.layer.v1.tar+gzip&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;digest&quot;</span><span class="punctuation">:</span> <span class="string">&quot;sha256:dc00ce595fccf890cd8505403725479661a93194c6ff8350d1841d22629b7870&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;size&quot;</span><span class="punctuation">:</span> <span class="number">3167</span></span><br><span class="line">    <span class="punctuation">&#125;</span></span><br><span class="line">  <span class="punctuation">]</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p>找到对应的 layer</p>
+<p><img src="https://a1.ax1x.com/2026/08/23/OMXKl.png" alt="OMXKl.png"></p>
+<p>使用指令进行手动下载</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">curl</span> <span class="string">-L</span> <span class="string">\</span></span><br><span class="line">  <span class="string">-o</span> <span class="string">/dev/null</span> <span class="string">\</span></span><br><span class="line">  <span class="string">-w</span> <span class="string">$&#x27;\nHTTP=%&#123;http_code&#125;\nSIZE=%&#123;size_download&#125;</span> <span class="string">bytes\nSPEED=%&#123;speed_download&#125;</span> <span class="string">bytes/s\nTIME=%&#123;time_total&#125;s\n&#x27;</span> <span class="string">\</span></span><br><span class="line">  <span class="string">&quot;https://docker.***.***/v2/mlikiowa/napcat-docker/blobs/sha256:99adaac412a4a27d8281d9004e797149f3d6f7cb5e8fb51bc073c31b2361eb49&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p>在不同的情况下多次尝试下载</p>
+<p>省流：</p>
+<p>在成都云服务器上，多次下载速度分别为（单位MBps）：11.1、11.5、5、<code>0.1</code>、13、6.2、7、<code>4.5</code>、11.9、11.6、10.3、12.1、1.9</p>
+<p>在本机上，多次下载速度分别为（单位MBps）：4.85、0.018、0.042、14.88、8.84、0.002、0.006，3.7、11.7、7、6.7</p>
+<p>由数据可知，下载速率是随机波动的</p>
+<p>那么有没有可能不只是这一个 Layer 下载波动，其他的 Layer 也存在相同的问题呢？现在随机挑选了一个 24MB 的 Layer，多次下载测试。</p>
+<p>在成都云服务器上，多次下载速度分别为：11.7、12.3、11.9、<code>4</code>、12.5、12.3、11.9、13.1、<code>3.1</code>、4.8、12.7</p>
+<p>在本机上，多次下载速度分别为：5、6.5、5.4、6.5、5.7、5.8、4.9、6.8、4.4、4.1、4.9</p>
+<p>整体的下载速度都相对不怎么稳定，时快时慢的。那么如果是直接从 Docker Hub 拉取呢？</p>
+<p>在本地环境直接挂梯从 dockerhub 拉取，测试10次速率恒定，都是稳定跑慢速</p>
+<p>感觉可能不是拉取问题，而是涉及到 tcp 网络连接，但是当前的精力不足可能得过段时间再继续了，目前服务器中仍然在跑定时脚本收集数据</p>
+<h2 id="Docker-缓存"><a href="#Docker-缓存" class="headerlink" title="Docker 缓存"></a>Docker 缓存</h2><p>在对比测试的时候，某一次在成都的机器上拉取两个镜像时，出现了没有流量流入，而是秒拉取成功。疑问是可能是 Docker 有潜在的缓存机制</p>
+<p>一个 Docker 的镜像有很多个 Layer 组成，运行 docker pull 命令拉取镜像时，会逐个 Layer 下载（官方默认线程为 3，也就是同时下载 3 个 Layer）。已经下载好的 layer 会放在 content store 中，下次如果需要下载相同的layer就可以直接使用本地已有的不需要联网重下</p>
+<p>Docker 默认的 <code>content store</code>存放位置在 <code>/var/lib/containerd/io.containerd.content.v1.content</code></p>
+<p><a target="_blank" rel="noopener" href="https://imgse.com/i/OMvgp"><img src="https://a1.ax1x.com/2026/08/23/OMvgp.png" alt="OMvgp.png"></a></p>
+<p>作为测试用途，我必须清理掉 content store 的缓存。但是官方似乎并没有给出一个单独的清理方案</p>
+<p>github中也有相似的<a target="_blank" rel="noopener" href="https://github.com/moby/moby/issues/48909">issues</a>。根据实测使用<code>docker image prune -a</code>命令可以在清理掉未被引用的镜像的同时一起清理掉content store缓存(这似乎是一个bug)</p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://blog.yin2hao.dev">yin2hao</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://blog.yin2hao.dev/2026/08/23/docker-pull%E5%91%BD%E4%BB%A4%E9%80%9A%E8%BF%87%E9%95%9C%E5%83%8F%E6%BA%90%E4%B8%8B%E8%BD%BD%E5%81%B6%E5%8F%91%E8%BF%87%E6%85%A2%E9%97%AE%E9%A2%98/">https://blog.yin2hao.dev/2026/08/23/docker-pull%E5%91%BD%E4%BB%A4%E9%80%9A%E8%BF%87%E9%95%9C%E5%83%8F%E6%BA%90%E4%B8%8B%E8%BD%BD%E5%81%B6%E5%8F%91%E8%BF%87%E6%85%A2%E9%97%AE%E9%A2%98/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://blog.yin2hao.dev" target="_blank">yin2hao's Blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/docker/">docker</a></div><div class="post-share"><div class="social-share" data-image="/null" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav id="pagination"><div class="pagination"></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2026/09/18/github-action%E4%BD%BF%E7%94%A8docker-build-push-action-v6%E6%8E%A8%E9%80%81%E5%A4%B1%E8%B4%A5%EF%BC%8C%E6%8F%90%E7%A4%BA401-Unauthorized-%E5%B7%B2%E6%8E%92%E9%99%A4%E6%9D%83%E9%99%90%E9%97%AE%E9%A2%98/" title="github action使用docker&#x2F;build-push-action@v6推送失败，提示401 Unauthorized,已排除权限问题"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-18</div><div class="info-item-2">github action使用docker&#x2F;build-push-action@v6推送失败，提示401 Unauthorized,已排除权限问题</div></div><div class="info-2"><div class="info-item-1">这是我原本的工作流 123456789101112131415161718192021222324252627282930313233343536373839404142434445464748495051525354555657585960616263646566676869name: Publish frontend Docker imageon:  push:    tags:      - &#x27;*&#x27;permissions:  contents: readconcurrency:  group: docker-publish-$&#123;&#123; github.repository &#125;&#125;-$&#123;&#123; github.ref &#125;&#125;  cancel-in-progress: falsejobs:  normalize-version:    name: Validate and normalize tag    runs-on: ubuntu-latest    outputs:      valid...</div></div></div></a></div></div><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="giscus-wrap"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/null" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">yin2hao</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">5</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">1</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">0</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/yin2hao"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/yin2hao" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">欢迎来到我的博客！</div></div><div class="sticky_layout"><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/09/18/github-action%E4%BD%BF%E7%94%A8docker-build-push-action-v6%E6%8E%A8%E9%80%81%E5%A4%B1%E8%B4%A5%EF%BC%8C%E6%8F%90%E7%A4%BA401-Unauthorized-%E5%B7%B2%E6%8E%92%E9%99%A4%E6%9D%83%E9%99%90%E9%97%AE%E9%A2%98/" title="github action使用docker/build-push-action@v6推送失败，提示401 Unauthorized,已排除权限问题">github action使用docker/build-push-action@v6推送失败，提示401 Unauthorized,已排除权限问题</a><time datetime="2026-09-18T13:54:13.000Z" title="发表于 2026-09-18 21:54:13">2026-09-18</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/23/docker-pull%E5%91%BD%E4%BB%A4%E9%80%9A%E8%BF%87%E9%95%9C%E5%83%8F%E6%BA%90%E4%B8%8B%E8%BD%BD%E5%81%B6%E5%8F%91%E8%BF%87%E6%85%A2%E9%97%AE%E9%A2%98/" title="docker pull命令通过镜像源下载偶发过慢问题">docker pull命令通过镜像源下载偶发过慢问题</a><time datetime="2026-08-23T09:03:54.000Z" title="发表于 2026-08-23 17:03:54">2026-08-23</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/04/title/" title="前后端自动携带token校验">前后端自动携带token校验</a><time datetime="2026-08-04T08:15:58.000Z" title="发表于 2026-08-04 16:15:58">2026-08-04</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/06/25/%E7%BC%96%E7%A8%8B%E9%83%A8%E5%88%86%E7%A8%8B%E5%BA%8F%E9%BB%98%E8%AE%A4%E4%BD%8D%E7%BD%AE%E7%9A%84%E4%BF%AE%E6%94%B9/" title="编程部分程序默认位置的修改">编程部分程序默认位置的修改</a><time datetime="2026-06-25T11:37:30.000Z" title="发表于 2026-06-25 19:37:30">2026-06-25</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/06/24/tostart/" title="开始之前">开始之前</a><time datetime="2026-06-24T02:10:36.000Z" title="发表于 2026-06-24 10:10:36">2026-06-24</time></div></div></div></div><div class="card-widget card-tags"><div class="item-headline"><i class="fas fa-tags"></i><span>标签</span></div><div class="card-tag-cloud"><a href="/tags/docker/" style="font-size: 1.1em; color: #999">docker</a></div></div><div class="card-widget card-archives">
+    <div class="item-headline"><i class="fas fa-archive"></i><span>归档</span></div>
+  
+    <ul class="card-archive-list">
+      
+        <li class="card-archive-list-item">
+          <a class="card-archive-list-link" href="/archives/2026/09/">
+            <span class="card-archive-list-date">
+              九月 2026
+            </span>
+            <span class="card-archive-list-count">1</span>
+          </a>
+        </li>
+      
+        <li class="card-archive-list-item">
+          <a class="card-archive-list-link" href="/archives/2026/08/">
+            <span class="card-archive-list-date">
+              八月 2026
+            </span>
+            <span class="card-archive-list-count">2</span>
+          </a>
+        </li>
+      
+        <li class="card-archive-list-item">
+          <a class="card-archive-list-link" href="/archives/2026/06/">
+            <span class="card-archive-list-date">
+              六月 2026
+            </span>
+            <span class="card-archive-list-count">2</span>
+          </a>
+        </li>
+      
+    </ul>
+  </div><div class="card-widget card-webinfo"><div class="item-headline"><i class="fas fa-chart-line"></i><span>网站信息</span></div><div class="webinfo"><div class="webinfo-item"><div class="item-name">文章数目 :</div><div class="item-count">5</div></div><div class="webinfo-item"><div class="item-name">本站访客数 :</div><div class="item-count" id="busuanzi_value_site_uv"><i class="fa-solid fa-spinner fa-spin"></i></div></div><div class="webinfo-item"><div class="item-name">本站总浏览量 :</div><div class="item-count" id="busuanzi_value_site_pv"><i class="fa-solid fa-spinner fa-spin"></i></div></div><div class="webinfo-item"><div class="item-name">最后更新时间 :</div><div class="item-count" id="last-push-date" data-lastPushDate="2026-09-18T13:57:58.378Z"><i class="fa-solid fa-spinner fa-spin"></i></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2026 By yin2hao</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 8.1.2</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.7.0</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><a id="to_comment" href="#post-comment" title="前往评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.7.0"></script><script src="/js/main.js?v=5.7.0"></script><div class="js-pjax"><script>(() => {
+  const isShuoshuo = GLOBAL_CONFIG_SITE.pageType === 'shuoshuo'
+  const option = {"mapping":"pathname","strict":1,"reactionsEnabled":1,"emitMetadata":0,"inputPosition":"top","lang":"zh-CN","loading":"lazy"}
+
+  const getGiscusTheme = theme => theme === 'dark' ? 'dark' : 'light'
+
+  const createScriptElement = config => {
+    const ele = document.createElement('script')
+    Object.entries(config).forEach(([key, value]) => {
+      ele.setAttribute(key, value)
+    })
+    return ele
+  }
+
+  const loadGiscus = (el = document, key) => {
+    const mappingConfig = isShuoshuo
+      ? { 'data-mapping': 'specific', 'data-term': key }
+      : { 'data-mapping': (option && option['data-mapping']) || 'pathname' }
+
+    const giscusConfig = {
+      src: 'https://giscus.app/client.js',
+      'data-repo': 'yin2hao/myblog',
+      'data-repo-id': 'R_kgDORF397w',
+      'data-category-id': 'DIC_kwDORF39784C_vHb',
+      'data-theme': getGiscusTheme(document.documentElement.getAttribute('data-theme')),
+      'data-reactions-enabled': '1',
+      crossorigin: 'anonymous',
+      async: true,
+      ...option,
+      ...mappingConfig
+    }
+
+    const scriptElement = createScriptElement(giscusConfig)
+
+    el.querySelector('#giscus-wrap').appendChild(scriptElement)
+
+    if (isShuoshuo) {
+      window.shuoshuoComment.destroyGiscus = () => {
+        if (el.children.length) {
+          el.innerHTML = ''
+          el.classList.add('no-comment')
+        }
+      }
+    }
+  }
+
+  const changeGiscusTheme = theme => {
+    const iframe = document.querySelector('#giscus-wrap iframe')
+    if (iframe) {
+      const message = {
+        giscus: {
+          setConfig: {
+            theme: getGiscusTheme(theme)
+          }
+        }
+      }
+      iframe.contentWindow.postMessage(message, 'https://giscus.app')
+    }
+  }
+
+  btf.addGlobalFn('themeChange', changeGiscusTheme, 'giscus')
+
+  if (isShuoshuo) {
+    'Giscus' === 'Giscus'
+      ? window.shuoshuoComment = { loadComment: loadGiscus }
+      : window.loadOtherComment = loadGiscus
+    return
+  }
+
+  if ('Giscus' === 'Giscus' || !false) {
+    if (false) btf.loadComment(document.getElementById('giscus-wrap'), loadGiscus)
+    else loadGiscus()
+  } else {
+    window.loadOtherComment = loadGiscus
+  }
+})()</script></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>

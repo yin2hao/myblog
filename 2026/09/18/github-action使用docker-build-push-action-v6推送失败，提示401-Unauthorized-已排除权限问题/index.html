@@ -1,0 +1,371 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>github action使用docker/build-push-action@v6推送失败，提示401 Unauthorized,已排除权限问题 | yin2hao's Blog</title><meta name="author" content="yin2hao"><meta name="copyright" content="yin2hao"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="这是我原本的工作流 123456789101112131415161718192021222324252627282930313233343536373839404142434445464748495051525354555657585960616263646566676869name: Publish frontend Docker imageon:  push:    tags:      -">
+<meta property="og:type" content="website">
+<meta property="og:title" content="github action使用docker&#x2F;build-push-action@v6推送失败，提示401 Unauthorized,已排除权限问题">
+<meta property="og:url" content="https://blog.yin2hao.dev/2026/09/18/github-action%E4%BD%BF%E7%94%A8docker-build-push-action-v6%E6%8E%A8%E9%80%81%E5%A4%B1%E8%B4%A5%EF%BC%8C%E6%8F%90%E7%A4%BA401-Unauthorized-%E5%B7%B2%E6%8E%92%E9%99%A4%E6%9D%83%E9%99%90%E9%97%AE%E9%A2%98/index.html">
+<meta property="og:site_name" content="yin2hao&#39;s Blog">
+<meta property="og:description" content="这是我原本的工作流 123456789101112131415161718192021222324252627282930313233343536373839404142434445464748495051525354555657585960616263646566676869name: Publish frontend Docker imageon:  push:    tags:      -">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-09-18T13:54:13.000Z">
+<meta property="article:modified_time" content="2026-09-18T13:57:45.197Z">
+<meta property="article:author" content="yin2hao">
+<meta property="article:tag" content="docker">
+<meta name="twitter:card" content="summary"><script type="application/ld+json"></script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://blog.yin2hao.dev/2026/09/18/github-action%E4%BD%BF%E7%94%A8docker-build-push-action-v6%E6%8E%A8%E9%80%81%E5%A4%B1%E8%B4%A5%EF%BC%8C%E6%8F%90%E7%A4%BA401-Unauthorized-%E5%B7%B2%E6%8E%92%E9%99%A4%E6%9D%83%E9%99%90%E9%97%AE%E9%A2%98/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=5.7.0"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.3.1/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        const data = { value }
+
+        if (ttl != null) {
+          data.expiry = Date.now() + ttl * 86400000
+        }
+
+        localStorage.setItem(key, JSON.stringify(data))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return
+
+        try {
+          const data = JSON.parse(itemStr)
+
+          if (data.expiry && Date.now() > data.expiry) {
+            localStorage.removeItem(key)
+            return
+          }
+
+          return data.value
+        } catch {
+          localStorage.removeItem(key)
+        }
+      }
+    }
+
+    const scriptCache = new Map()
+    const cssCache = new Map()
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => {
+        if (scriptCache.has(url)) {
+          return scriptCache.get(url)
+        }
+
+        const promise = new Promise((resolve, reject) => {
+          const script = document.createElement('script')
+
+          script.src = url
+          script.async = true
+
+          for (const key in attr) {
+            script.setAttribute(key, attr[key])
+          }
+
+          script.onload = resolve
+          script.onerror = reject
+
+          document.head.appendChild(script)
+        })
+
+        scriptCache.set(url, promise)
+
+        return promise
+      },
+      getCSS: (url, id) => {
+        if (cssCache.has(url)) {
+          return cssCache.get(url)
+        }
+
+        const promise = new Promise((resolve, reject) => {
+          const link = document.createElement('link')
+
+          link.rel = 'stylesheet'
+          link.href = url
+
+          if (id) {
+            link.id = id
+          }
+
+          link.onload = resolve
+          link.onerror = reject
+
+          document.head.appendChild(link)
+        })
+
+        cssCache.set(url, promise)
+
+        return promise
+      },
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const metaThemeColor = document.querySelector('meta[name="theme-color"]')
+      const activateDarkMode = () => {
+        document.documentElement.dataset.theme = 'dark'
+        if (metaThemeColor !== null) {
+          metaThemeColor.setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.dataset.theme = 'light'
+        if (metaThemeColor !== null) {
+          metaThemeColor.setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.13.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'github action使用docker/build-push-action@v6推送失败，提示401 Unauthorized,已排除权限问题',
+  isHighlightShrink: false,
+  isToc: false,
+  pageType: 'layout'
+}</script><meta name="generator" content="Hexo 8.1.2"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/null" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">5</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">1</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">0</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div></div></div></div><div class="page" id="body-wrap"><header class="not-home-page" id="page-header"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">yin2hao's Blog</span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="page-site-info"><h1 id="site-title">github action使用docker/build-push-action@v6推送失败，提示401 Unauthorized,已排除权限问题</h1></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><p>这是我原本的工作流</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">name:</span> <span class="string">Publish</span> <span class="string">frontend</span> <span class="string">Docker</span> <span class="string">image</span></span><br><span class="line"></span><br><span class="line"><span class="attr">on:</span></span><br><span class="line">  <span class="attr">push:</span></span><br><span class="line">    <span class="attr">tags:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">&#x27;*&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="attr">permissions:</span></span><br><span class="line">  <span class="attr">contents:</span> <span class="string">read</span></span><br><span class="line"></span><br><span class="line"><span class="attr">concurrency:</span></span><br><span class="line">  <span class="attr">group:</span> <span class="string">docker-publish-$&#123;&#123;</span> <span class="string">github.repository</span> <span class="string">&#125;&#125;-$&#123;&#123;</span> <span class="string">github.ref</span> <span class="string">&#125;&#125;</span></span><br><span class="line">  <span class="attr">cancel-in-progress:</span> <span class="literal">false</span></span><br><span class="line"></span><br><span class="line"><span class="attr">jobs:</span></span><br><span class="line">  <span class="attr">normalize-version:</span></span><br><span class="line">    <span class="attr">name:</span> <span class="string">Validate</span> <span class="string">and</span> <span class="string">normalize</span> <span class="string">tag</span></span><br><span class="line">    <span class="attr">runs-on:</span> <span class="string">ubuntu-latest</span></span><br><span class="line">    <span class="attr">outputs:</span></span><br><span class="line">      <span class="attr">valid:</span> <span class="string">$&#123;&#123;</span> <span class="string">steps.version.outputs.valid</span> <span class="string">&#125;&#125;</span></span><br><span class="line">      <span class="attr">version:</span> <span class="string">$&#123;&#123;</span> <span class="string">steps.version.outputs.version</span> <span class="string">&#125;&#125;</span></span><br><span class="line">    <span class="attr">steps:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">Checkout</span></span><br><span class="line">        <span class="attr">uses:</span> <span class="string">actions/checkout@v4</span></span><br><span class="line"></span><br><span class="line">      <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">Validate</span> <span class="string">vX.Y.Z-compatible</span> <span class="string">tag</span></span><br><span class="line">        <span class="attr">id:</span> <span class="string">version</span></span><br><span class="line">        <span class="attr">shell:</span> <span class="string">bash</span></span><br><span class="line">        <span class="attr">env:</span></span><br><span class="line">          <span class="attr">TAG:</span> <span class="string">$&#123;&#123;</span> <span class="string">github.ref_name</span> <span class="string">&#125;&#125;</span></span><br><span class="line">        <span class="attr">run:</span> <span class="string">bash</span> <span class="string">scripts/release/normalize-version.sh</span></span><br><span class="line"></span><br><span class="line">  <span class="attr">publish-image:</span></span><br><span class="line">    <span class="attr">name:</span> <span class="string">Build</span> <span class="string">and</span> <span class="string">push</span> <span class="string">frontend</span> <span class="string">Docker</span> <span class="string">image</span></span><br><span class="line">    <span class="attr">needs:</span> <span class="string">normalize-version</span></span><br><span class="line">    <span class="attr">if:</span> <span class="string">needs.normalize-version.outputs.valid</span> <span class="string">==</span> <span class="string">&#x27;true&#x27;</span></span><br><span class="line">    <span class="attr">runs-on:</span> <span class="string">ubuntu-latest</span></span><br><span class="line">    <span class="attr">permissions:</span></span><br><span class="line">      <span class="attr">contents:</span> <span class="string">read</span></span><br><span class="line">      <span class="attr">packages:</span> <span class="string">write</span></span><br><span class="line">    <span class="attr">steps:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">Checkout</span></span><br><span class="line">        <span class="attr">uses:</span> <span class="string">actions/checkout@v4</span></span><br><span class="line"></span><br><span class="line">      <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">Setup</span> <span class="string">Docker</span> <span class="string">Buildx</span></span><br><span class="line">        <span class="attr">uses:</span> <span class="string">docker/setup-buildx-action@v3</span></span><br><span class="line"></span><br><span class="line">      <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">Login</span> <span class="string">to</span> <span class="string">container</span> <span class="string">registry</span></span><br><span class="line">        <span class="attr">uses:</span> <span class="string">docker/login-action@v3</span></span><br><span class="line">        <span class="attr">with:</span></span><br><span class="line">          <span class="attr">registry:</span> <span class="string">$&#123;&#123;</span> <span class="string">secrets.REGISTRY_HOST</span> <span class="string">&#125;&#125;</span></span><br><span class="line">          <span class="attr">username:</span> <span class="string">$&#123;&#123;</span> <span class="string">secrets.REGISTRY_USERNAME</span> <span class="string">&#125;&#125;</span></span><br><span class="line">          <span class="attr">password:</span> <span class="string">$&#123;&#123;</span> <span class="string">secrets.REGISTRY_PASSWORD</span> <span class="string">&#125;&#125;</span></span><br><span class="line"></span><br><span class="line">      <span class="bullet">-</span> <span class="attr">name:</span> <span class="string">Build</span> <span class="string">and</span> <span class="string">push</span> <span class="string">frontend</span> <span class="string">image</span></span><br><span class="line">        <span class="attr">uses:</span> <span class="string">docker/build-push-action@v6</span></span><br><span class="line">        <span class="attr">with:</span></span><br><span class="line">          <span class="attr">context:</span> <span class="string">.</span></span><br><span class="line">          <span class="attr">file:</span> <span class="string">./Dockerfile</span></span><br><span class="line">          <span class="attr">push:</span> <span class="literal">true</span></span><br><span class="line">          <span class="attr">tags:</span> <span class="string">|</span></span><br><span class="line"><span class="string">            $&#123;&#123; secrets.REGISTRY_HOST &#125;&#125;/$&#123;&#123; secrets.REGISTRY_NAMESPACE &#125;&#125;/videobackup-frontend:$&#123;&#123; needs.normalize-version.outputs.version &#125;&#125;</span></span><br><span class="line"><span class="string">            $&#123;&#123; secrets.REGISTRY_HOST &#125;&#125;/$&#123;&#123; secrets.REGISTRY_NAMESPACE &#125;&#125;/videobackup-frontend:latest</span></span><br><span class="line"><span class="string"></span>          <span class="attr">labels:</span> <span class="string">|</span></span><br><span class="line"><span class="string">            org.opencontainers.image.title=VideoBackup frontend</span></span><br><span class="line"><span class="string">            org.opencontainers.image.version=$&#123;&#123; needs.normalize-version.outputs.version &#125;&#125;</span></span><br><span class="line"><span class="string">            org.opencontainers.image.source=$&#123;&#123; github.server_url &#125;&#125;/$&#123;&#123; github.repository &#125;&#125;</span></span><br><span class="line"><span class="string"></span>          <span class="attr">cache-from:</span> <span class="string">type=gha</span></span><br><span class="line">          <span class="attr">cache-to:</span> <span class="string">type=gha,mode=max</span></span><br></pre></td></tr></table></figure>
+
+<p>大概的步骤是：</p>
+<p>先检查版本号，比如<code>v1.0.0</code>这样的三段式，<code>v*.*.*</code>的格式，不是指定格式的规范成这个格式</p>
+<p>然后开始构建前端。先通过 <code>docker/setup-buildx-action@v3</code> 安装docker cli，然后使用<code>docker/login-action@v3</code>通过 github secret中的信息登录 docker hub。最后通过 <code>docker/build-push-action@v6</code> 构建并push镜像。<br>但是测试运行的时候，发现推送时报错</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">ERROR: failed to build: failed to solve: failed to fetch oauth token:</span> <span class="string">unexpected</span> <span class="string">status</span> <span class="string">from</span> <span class="string">GET</span> <span class="string">request</span> <span class="string">to</span> <span class="string">https://auth.docker.io/token?scope=repository%3A***%2Fvideobackup-frontend%3Apull%2Cpush&amp;service=registry.docker.io:</span> <span class="attr">401 Unauthorized:</span> <span class="string">access</span> <span class="string">token</span> <span class="string">has</span> <span class="string">insufficient</span> <span class="string">scopes</span></span><br></pre></td></tr></table></figure>
+
+<p>一般来说这个的意思是PAT的权限不足以 push 上 dockerhub 。但是我很明确是授予了 <code>read &amp; write</code> 权限的</p>
+<p>而且这一个发布的工作流是从另一个已经正常跑了 5 个月的仓库直接扒下来的，理论上配置什么的都相同，不应该出问题才对。</p>
+<p>于是尝试各种替换 github secrets测试，无论怎样都是 401 错误。于是开始尝试根据流程排查。首先可以确认的是<code>docker/login-action@v3</code>是没有问题的，因为该步骤提示<code>Login Succeeded!</code>，说明<code>REGISTRY_USERNAME</code>和<code>REGISTRY_PASSWORD</code>是可以正常登录的，但是最后仍然提示没有授权。</p>
+<p>已知：</p>
+<ul>
+<li><p>提示令牌权限不足</p>
+</li>
+<li><p>确认令牌生成时给足了权限</p>
+</li>
+<li><p>确认填入的是我的令牌</p>
+</li>
+</ul>
+<p>那么可能的原因只剩下了</p>
+<ol>
+<li><p>docker官方权限管理出问题了</p>
+</li>
+<li><p>工作流没有使用我的PAT</p>
+</li>
+</ol>
+<p>docker hub官方我没办法，且社区没有看到有明确的帖子讨论这件事情，因此不太可能是官方的问题。那就只能往工作流中没有使用我的 PAT 上面靠。</p>
+<p>先了解一下整体的流程代码，借助 GPT 对整体流程的相关代码进行扫描：</p>
+<p>查阅了三个action脚本的代码没有发现明显问题</p>
+<p>这里<code>docker/login-action@v3</code>对于register的处理只有一个当不存在时自动设置为<code>docker.io</code>，无伤大雅</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="keyword">function</span> <span class="title function_">getAuthList</span>(<span class="params"><span class="attr">inputs</span>: <span class="title class_">Inputs</span></span>): <span class="title class_">Array</span>&lt;<span class="title class_">Auth</span>&gt; &#123;</span><br><span class="line">  <span class="keyword">if</span> (inputs.<span class="property">registryAuth</span> &amp;&amp; (inputs.<span class="property">registry</span> || inputs.<span class="property">username</span> || inputs.<span class="property">password</span> || inputs.<span class="property">scope</span> || inputs.<span class="property">ecr</span>)) &#123;</span><br><span class="line">    <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">Error</span>(<span class="string">&#x27;Cannot use registry-auth with other inputs&#x27;</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">let</span> <span class="attr">auths</span>: <span class="title class_">Array</span>&lt;<span class="title class_">Auth</span>&gt; = [];</span><br><span class="line">  <span class="keyword">if</span> (!inputs.<span class="property">registryAuth</span>) &#123;</span><br><span class="line">    <span class="keyword">const</span> registry = inputs.<span class="property">registry</span> || <span class="string">&#x27;docker.io&#x27;</span>;</span><br><span class="line">    auths.<span class="title function_">push</span>(&#123;</span><br><span class="line">      registry,</span><br><span class="line">      <span class="attr">username</span>: inputs.<span class="property">username</span>,</span><br><span class="line">      <span class="attr">password</span>: inputs.<span class="property">password</span>,</span><br><span class="line">      <span class="attr">scope</span>: inputs.<span class="property">scope</span>,</span><br><span class="line">      <span class="attr">ecr</span>: inputs.<span class="property">ecr</span> || <span class="string">&#x27;auto&#x27;</span>,</span><br><span class="line">      <span class="attr">configDir</span>: <span class="title function_">scopeToConfigDir</span>(registry, inputs.<span class="property">scope</span>)</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    auths = (yaml.<span class="title function_">load</span>(inputs.<span class="property">registryAuth</span>) <span class="keyword">as</span> <span class="title class_">Array</span>&lt;<span class="title class_">Auth</span>&gt;).<span class="title function_">map</span>(<span class="function"><span class="params">auth</span> =&gt;</span> &#123;</span><br><span class="line">      <span class="keyword">if</span> (auth.<span class="property">password</span>) &#123;</span><br><span class="line">        core.<span class="title function_">setSecret</span>(auth.<span class="property">password</span>); <span class="comment">// redacted in workflow logs</span></span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">const</span> registry = auth.<span class="property">registry</span> || <span class="string">&#x27;docker.io&#x27;</span>;</span><br><span class="line">      <span class="keyword">return</span> &#123;</span><br><span class="line">        registry,</span><br><span class="line">        <span class="attr">username</span>: auth.<span class="property">username</span>,</span><br><span class="line">        <span class="attr">password</span>: auth.<span class="property">password</span>,</span><br><span class="line">        <span class="attr">scope</span>: auth.<span class="property">scope</span>,</span><br><span class="line">        <span class="attr">ecr</span>: auth.<span class="property">ecr</span> || <span class="string">&#x27;auto&#x27;</span>,</span><br><span class="line">        <span class="attr">configDir</span>: <span class="title function_">scopeToConfigDir</span>(registry, auth.<span class="property">scope</span>)</span><br><span class="line">      &#125;;</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> (auths.<span class="property">length</span> == <span class="number">0</span>) &#123;</span><br><span class="line">    <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">Error</span>(<span class="string">&#x27;No registry to login&#x27;</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> auths;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<p>在 <a target="_blank" rel="noopener" href="https://github.com/docker/cli">docker cli</a> 中检索到了代码<br><code>cli/command/registry/login.go</code> line 161</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> opts.serverAddress != <span class="string">&quot;&quot;</span> &amp;&amp; opts.serverAddress != registry.DefaultNamespace &#123;</span><br><span class="line">    serverAddress = opts.serverAddress</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    serverAddress = registry.IndexServer</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在<code>docker login</code>流程中，传入的<code>serverAddress</code>不为空且不为<code>docker.io</code>时，设置为传入值，否则设置为默认<code>https://index.docker.io/v1/</code></p>
+<p><code>cli/config/configfile/file.go</code> line 44</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">getAuthConfigKey</span><span class="params">(domainName <span class="type">string</span>)</span></span> <span class="type">string</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> domainName == <span class="string">&quot;docker.io&quot;</span> || domainName == <span class="string">&quot;index.docker.io&quot;</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> authConfigKey</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> domainName</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>而<code>const authConfigKey = &quot;``https://index.docker.io/v1/``&quot;</code>， 也就是说，当 DomainName 为<code>docker.io</code>的时候，会直接返回<code>https://index.docker.io/v1/</code>。</p>
+<p>这两串代码一起，会导致<code>docker login docker.io</code>时在本地<code>config.json</code>文件写入的domian为<code>https://index.docker.io/v1/</code>而不是<code>docker.io</code></p>
+<p>在 <a target="_blank" rel="noopener" href="https://github.com/containerd/containerd">container</a> 中检索到代码</p>
+<p><code>core/remotes/docker/config/hosts.go</code> line 102</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> host == <span class="string">&quot;docker.io&quot;</span> &#123;</span><br><span class="line">    hosts[<span class="built_in">len</span>(hosts)<span class="number">-1</span>].scheme = <span class="string">&quot;https&quot;</span></span><br><span class="line">    hosts[<span class="built_in">len</span>(hosts)<span class="number">-1</span>].host = <span class="string">&quot;registry-1.docker.io&quot;</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在传入是<code>docker.io</code>时，container会将其映射回<code>registry-1.docker.io</code></p>
+<p>同时在 <a target="_blank" rel="noopener" href="https://github.com/docker/buildx">docker buildx</a> 仓库发现了类似的逻辑</p>
+<p><code>util/dockerutil/dockerconfig/configprovider.go</code>文件 line 122~125</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">hostKey := host</span><br><span class="line"><span class="keyword">if</span> host == authprovider.DockerHubRegistryHost &#123;</span><br><span class="line">    hostKey = authprovider.DockerHubConfigfileKey</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>其中</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">DockerHubConfigfileKey = <span class="string">&quot;https://index.docker.io/v1/&quot;</span></span><br><span class="line">DockerHubRegistryHost  = <span class="string">&quot;registry-1.docker.io&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p>在 docker 中， buildx用于管理BuildKit的各种控制器，此处代码用于读取本地 <code>config.json</code> 以为 BuildKit 提供镜像仓库认证信息</p>
+<p>也就是说，从配置文件读取的时候，如果传入 host 为<code>docker.io</code>的话，container会将host替换为<code>registry-1.docker.io</code>，然后又被<code>configprovider</code>修改为读取 <code>https://index.docker.io/v1/</code>。于是读取配置文件时不会读取<code>docker.io</code>对应的 PAT，而是使用<code>https://index.docker.io/v1/</code>对应的PAT</p>
+<p>这两者刚好使<code>docker.io</code>能够正常运行</p>
+<p>如果传入的<code>registry host</code>为<code>registry-1.docker.io</code>的话，那么在<code>docker login registry-1.docker.io</code>环节能够正常的写入<code>config.json</code>文件，但是在 buildx 构建完成推送的时候，会被<code>configprovider</code>替换为<code>https://index.docker.io/v1/</code></p>
+<p>但是如果是这样的话，还有一个问题：原本的本地记录里面有一个对应的PAT，并且这个PAT的权限不足以推送，才会导致后续的出现401 Unauthorized。这个PAT是哪来的呢？为此单独开了一个仓库测试:</p>
+<p>在 registry host为<code>registry-1.docker.io</code>时，登录前和登录后的<code>config.json</code>分别为</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="attr">&quot;auths&quot;:</span> &#123;</span><br><span class="line">    <span class="attr">&quot;https://index.docker.io/v1/&quot;:</span> &#123;</span><br><span class="line">      <span class="attr">&quot;auth&quot;:</span> <span class="string">&quot;...&quot;</span></span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;auths&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">    <span class="attr">&quot;https://index.docker.io/v1/&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">      <span class="attr">&quot;auth&quot;</span><span class="punctuation">:</span> <span class="string">&quot;...&quot;</span></span><br><span class="line">    <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;registry-1.docker.io&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">      <span class="attr">&quot;auth&quot;</span><span class="punctuation">:</span> <span class="string">&quot;...&quot;</span></span><br><span class="line">    <span class="punctuation">&#125;</span></span><br><span class="line">  <span class="punctuation">&#125;</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p>在 registry host为<code>docker.io</code>时，登录前和登录后的<code>config.json</code>分别为</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="string">&quot;auths&quot;</span>: &#123;</span><br><span class="line">    <span class="string">&quot;https://index.docker.io/v1/&quot;</span>: &#123;</span><br><span class="line">      <span class="string">&quot;auth&quot;</span>: <span class="string">&quot;...&quot;</span></span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="string">&quot;auths&quot;</span>: &#123;</span><br><span class="line">    <span class="string">&quot;https://index.docker.io/v1/&quot;</span>: &#123;</span><br><span class="line">      <span class="string">&quot;auth&quot;</span>: <span class="string">&quot;...&quot;</span></span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>与代码逻辑相同。</p>
+<p>如实验结果所示，在登录工作流运行之前，Action Runner容器中就已经存在了一份config.json文件。查找资料后，感觉可能是因为<a target="_blank" rel="noopener" href="https://docs.github.com/zh/actions/how-tos/write-workflows/choose-where-workflows-run/run-jobs-in-a-container">这个</a>的原因</p>
+<blockquote>
+<p>Docker Hub 通常会对推送和拉取操作设置速率限制，这将影响自托管运行程序上的作业。 不过，根据 GitHub 和 Docker 之间的协议，GitHub 托管的运行程序不受这些限制的约束。</p>
+</blockquote>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://blog.yin2hao.dev">yin2hao</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://blog.yin2hao.dev/2026/09/18/github-action%E4%BD%BF%E7%94%A8docker-build-push-action-v6%E6%8E%A8%E9%80%81%E5%A4%B1%E8%B4%A5%EF%BC%8C%E6%8F%90%E7%A4%BA401-Unauthorized-%E5%B7%B2%E6%8E%92%E9%99%A4%E6%9D%83%E9%99%90%E9%97%AE%E9%A2%98/">https://blog.yin2hao.dev/2026/09/18/github-action%E4%BD%BF%E7%94%A8docker-build-push-action-v6%E6%8E%A8%E9%80%81%E5%A4%B1%E8%B4%A5%EF%BC%8C%E6%8F%90%E7%A4%BA401-Unauthorized-%E5%B7%B2%E6%8E%92%E9%99%A4%E6%9D%83%E9%99%90%E9%97%AE%E9%A2%98/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://blog.yin2hao.dev" target="_blank">yin2hao's Blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/docker/">docker</a></div><div class="post-share"><div class="social-share" data-image="/null" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav id="pagination"><div class="pagination"></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2026/08/23/docker-pull%E5%91%BD%E4%BB%A4%E9%80%9A%E8%BF%87%E9%95%9C%E5%83%8F%E6%BA%90%E4%B8%8B%E8%BD%BD%E5%81%B6%E5%8F%91%E8%BF%87%E6%85%A2%E9%97%AE%E9%A2%98/" title="docker pull命令通过镜像源下载偶发过慢问题"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-23</div><div class="info-item-2">docker pull命令通过镜像源下载偶发过慢问题</div></div><div class="info-2"><div class="info-item-1">背景现在有两台服务器，一台是位于中国成都内地的 ESC 实例 A(20M带宽) 另外一台是位于吉隆坡的轻量应用服务器 B （峰值200M带宽） 在这之前，我比较喜欢使用 1Panel 面板可视化管理服务器。1Panel 面板是基于 Docker 的管理面板，它的应用体系基本依靠 Docker Compose。 1Panel 面板官方提供了一个应用商城。该应用商城分为两个部分，一个是官方提供的应用，另外一个部分是可以从本地的目录中同步应用。鉴于官方提供的应用较少且覆盖不完整，我配置了第三方应用商城以及个人的 Docker Compose 编排，每天定时更新。  由于新买的服务器在中国成都，受到网络条件制约，目前国内主流的 Docker 镜像源要么收费，要么相对不稳定，因此，我在位于吉隆坡的服务器 B 使用 Docker 官方的 Registry 搭建了简单的 Docker 镜像源，当接到拉取请求时，吉隆坡的服务器先从 DockerHub 拉取镜像到本地，再发送给请求者，镜像本机缓存 24 小时。  准备安装的 astrbot + napcat 的容器编排如下。 1234567891...</div></div></div></a></div></div><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="giscus-wrap"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/null" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">yin2hao</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">5</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">1</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">0</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/yin2hao"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/yin2hao" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">欢迎来到我的博客！</div></div><div class="sticky_layout"><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/09/18/github-action%E4%BD%BF%E7%94%A8docker-build-push-action-v6%E6%8E%A8%E9%80%81%E5%A4%B1%E8%B4%A5%EF%BC%8C%E6%8F%90%E7%A4%BA401-Unauthorized-%E5%B7%B2%E6%8E%92%E9%99%A4%E6%9D%83%E9%99%90%E9%97%AE%E9%A2%98/" title="github action使用docker/build-push-action@v6推送失败，提示401 Unauthorized,已排除权限问题">github action使用docker/build-push-action@v6推送失败，提示401 Unauthorized,已排除权限问题</a><time datetime="2026-09-18T13:54:13.000Z" title="发表于 2026-09-18 21:54:13">2026-09-18</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/23/docker-pull%E5%91%BD%E4%BB%A4%E9%80%9A%E8%BF%87%E9%95%9C%E5%83%8F%E6%BA%90%E4%B8%8B%E8%BD%BD%E5%81%B6%E5%8F%91%E8%BF%87%E6%85%A2%E9%97%AE%E9%A2%98/" title="docker pull命令通过镜像源下载偶发过慢问题">docker pull命令通过镜像源下载偶发过慢问题</a><time datetime="2026-08-23T09:03:54.000Z" title="发表于 2026-08-23 17:03:54">2026-08-23</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/04/title/" title="前后端自动携带token校验">前后端自动携带token校验</a><time datetime="2026-08-04T08:15:58.000Z" title="发表于 2026-08-04 16:15:58">2026-08-04</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/06/25/%E7%BC%96%E7%A8%8B%E9%83%A8%E5%88%86%E7%A8%8B%E5%BA%8F%E9%BB%98%E8%AE%A4%E4%BD%8D%E7%BD%AE%E7%9A%84%E4%BF%AE%E6%94%B9/" title="编程部分程序默认位置的修改">编程部分程序默认位置的修改</a><time datetime="2026-06-25T11:37:30.000Z" title="发表于 2026-06-25 19:37:30">2026-06-25</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/06/24/tostart/" title="开始之前">开始之前</a><time datetime="2026-06-24T02:10:36.000Z" title="发表于 2026-06-24 10:10:36">2026-06-24</time></div></div></div></div><div class="card-widget card-tags"><div class="item-headline"><i class="fas fa-tags"></i><span>标签</span></div><div class="card-tag-cloud"><a href="/tags/docker/" style="font-size: 1.1em; color: #999">docker</a></div></div><div class="card-widget card-archives">
+    <div class="item-headline"><i class="fas fa-archive"></i><span>归档</span></div>
+  
+    <ul class="card-archive-list">
+      
+        <li class="card-archive-list-item">
+          <a class="card-archive-list-link" href="/archives/2026/09/">
+            <span class="card-archive-list-date">
+              九月 2026
+            </span>
+            <span class="card-archive-list-count">1</span>
+          </a>
+        </li>
+      
+        <li class="card-archive-list-item">
+          <a class="card-archive-list-link" href="/archives/2026/08/">
+            <span class="card-archive-list-date">
+              八月 2026
+            </span>
+            <span class="card-archive-list-count">2</span>
+          </a>
+        </li>
+      
+        <li class="card-archive-list-item">
+          <a class="card-archive-list-link" href="/archives/2026/06/">
+            <span class="card-archive-list-date">
+              六月 2026
+            </span>
+            <span class="card-archive-list-count">2</span>
+          </a>
+        </li>
+      
+    </ul>
+  </div><div class="card-widget card-webinfo"><div class="item-headline"><i class="fas fa-chart-line"></i><span>网站信息</span></div><div class="webinfo"><div class="webinfo-item"><div class="item-name">文章数目 :</div><div class="item-count">5</div></div><div class="webinfo-item"><div class="item-name">本站访客数 :</div><div class="item-count" id="busuanzi_value_site_uv"><i class="fa-solid fa-spinner fa-spin"></i></div></div><div class="webinfo-item"><div class="item-name">本站总浏览量 :</div><div class="item-count" id="busuanzi_value_site_pv"><i class="fa-solid fa-spinner fa-spin"></i></div></div><div class="webinfo-item"><div class="item-name">最后更新时间 :</div><div class="item-count" id="last-push-date" data-lastPushDate="2026-09-18T13:57:58.378Z"><i class="fa-solid fa-spinner fa-spin"></i></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2026 By yin2hao</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 8.1.2</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.7.0</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><a id="to_comment" href="#post-comment" title="前往评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.7.0"></script><script src="/js/main.js?v=5.7.0"></script><div class="js-pjax"><script>(() => {
+  const isShuoshuo = GLOBAL_CONFIG_SITE.pageType === 'shuoshuo'
+  const option = {"mapping":"pathname","strict":1,"reactionsEnabled":1,"emitMetadata":0,"inputPosition":"top","lang":"zh-CN","loading":"lazy"}
+
+  const getGiscusTheme = theme => theme === 'dark' ? 'dark' : 'light'
+
+  const createScriptElement = config => {
+    const ele = document.createElement('script')
+    Object.entries(config).forEach(([key, value]) => {
+      ele.setAttribute(key, value)
+    })
+    return ele
+  }
+
+  const loadGiscus = (el = document, key) => {
+    const mappingConfig = isShuoshuo
+      ? { 'data-mapping': 'specific', 'data-term': key }
+      : { 'data-mapping': (option && option['data-mapping']) || 'pathname' }
+
+    const giscusConfig = {
+      src: 'https://giscus.app/client.js',
+      'data-repo': 'yin2hao/myblog',
+      'data-repo-id': 'R_kgDORF397w',
+      'data-category-id': 'DIC_kwDORF39784C_vHb',
+      'data-theme': getGiscusTheme(document.documentElement.getAttribute('data-theme')),
+      'data-reactions-enabled': '1',
+      crossorigin: 'anonymous',
+      async: true,
+      ...option,
+      ...mappingConfig
+    }
+
+    const scriptElement = createScriptElement(giscusConfig)
+
+    el.querySelector('#giscus-wrap').appendChild(scriptElement)
+
+    if (isShuoshuo) {
+      window.shuoshuoComment.destroyGiscus = () => {
+        if (el.children.length) {
+          el.innerHTML = ''
+          el.classList.add('no-comment')
+        }
+      }
+    }
+  }
+
+  const changeGiscusTheme = theme => {
+    const iframe = document.querySelector('#giscus-wrap iframe')
+    if (iframe) {
+      const message = {
+        giscus: {
+          setConfig: {
+            theme: getGiscusTheme(theme)
+          }
+        }
+      }
+      iframe.contentWindow.postMessage(message, 'https://giscus.app')
+    }
+  }
+
+  btf.addGlobalFn('themeChange', changeGiscusTheme, 'giscus')
+
+  if (isShuoshuo) {
+    'Giscus' === 'Giscus'
+      ? window.shuoshuoComment = { loadComment: loadGiscus }
+      : window.loadOtherComment = loadGiscus
+    return
+  }
+
+  if ('Giscus' === 'Giscus' || !false) {
+    if (false) btf.loadComment(document.getElementById('giscus-wrap'), loadGiscus)
+    else loadGiscus()
+  } else {
+    window.loadOtherComment = loadGiscus
+  }
+})()</script></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
