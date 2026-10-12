@@ -7,7 +7,7 @@
     "clean": "hexo clean",
     "deploy": "hexo deploy",
     "server": "hexo server",
-    "upload-images": "python scripts/upload_markdown_images.py"
+    "upload-images": "python tools/upload_markdown_images.py"
   },
   "hexo": {
     "version": "8.1.2"

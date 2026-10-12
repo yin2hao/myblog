@@ -41,7 +41,7 @@ jobs:
       - name: Upload local images and rewrite Markdown
         env:
           PICGO_CLOUD_TOKEN: ${{ secrets.PICGO_CLOUD_TOKEN }}
-        run: python scripts/upload_markdown_images.py
+        run: python tools/upload_markdown_images.py
 
       - name: Commit updated Markdown
         run: |
