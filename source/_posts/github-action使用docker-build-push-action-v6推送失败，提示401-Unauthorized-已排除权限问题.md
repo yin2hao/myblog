@@ -5,24 +5,6 @@ date: 2026-09-18 21:54:13
 tags: docker
 ---
 
-## 浏览器打开控制台加载缓慢
-
-在之前，我一直是通过Edge浏览器F12打开的调试窗口。但是，在之前一直存在一个问题，就是打开调试窗口之后，网页的加载速度会变得很慢
-
-![PixPin\_2026\-09\-16\_13\-28\-15\.gif](图片和附件/PixPin_2026-09-16_13-28-15.gif)
-
-因为本身打开了控制台之后就会造成一部分的性能损失。因此我之前一直没有把这个当回事。
-
-直到本周，我发现了不对
-
-![image\.png](图片和附件/image%201.png)
-
-原来我一直是模拟的慢速4G，所以说才会导致加载过慢。将该栏更改为无限制之后，就回到了几乎与正常请求相近的速度。
-
-![PixPin\_2026\-09\-16\_13\-31\-35\.gif](图片和附件/PixPin_2026-09-16_13-31-35.gif)
-
-~~气笑了，edge云同步不要什么东西都同步啊喂~~
-
 ## docker hub推送问题
 
 ### 问题开始
@@ -216,7 +198,7 @@ docker hub官方我没办法，且社区没有看到有明确的帖子讨论这�
 
 如实验结果所示，在登录工作流运行之前，Action Runner容器中就已经存在了一份`config.json`文件，并且`config.json`文件中存在一个`PAT`。查找资料后，感觉可能是因为这个的原因
 
-![image\.png](图片和附件/image.png)
+![image\.png](../images/github-action-docker-push/image.png)
 
 
 
@@ -424,7 +406,7 @@ else if host == "docker.io" {
 
 - 登出时：`docker logout docker.io`成功\(实际失败\)，尝试删除`docker.io`，但不存在
 
-![PixPin\_2026\-09\-23\_13\-03\-25\.gif](图片和附件/PixPin_2026-09-23_13-03-25.gif)
+![PixPin\_2026\-09\-23\_13\-03\-25\.gif](../images/github-action-docker-push/PixPin_2026-09-23_13-03-25.gif)
 
 该问题已提交[pr](https://github.com/docker/cli/pull/7327)，会被合并吗？
 
