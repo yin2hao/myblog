@@ -15,11 +15,11 @@ tags: docker
 
 1Panel 面板官方提供了一个应用商城。该应用商城分为两个部分，一个是官方提供的应用，另外一个部分是可以从本地的目录中同步应用。鉴于官方提供的应用较少且覆盖不完整，我配置了[第三方应用商城](https://github.com/QYG2297248353/appstore-1panel)以及个人的 Docker Compose 编排，每天定时更新。
 
-![OMMKr.png](https://a1.ax1x.com/2026/08/23/OMMKr.png)
+![img_7.png](../images/4/img_7.png)
 
 由于新买的服务器在中国成都，受到网络条件制约，目前国内主流的 Docker 镜像源要么收费，要么相对不稳定，因此，我在位于吉隆坡的服务器 B 使用 Docker 官方的 [Registry](https://hub.docker.com/_/registry) 搭建了简单的 Docker 镜像源，当接到拉取请求时，吉隆坡的服务器先从 DockerHub 拉取镜像到本地，再发送给请求者，镜像本机缓存 24 小时。
 
-![OMJQ4.png](https://a1.ax1x.com/2026/08/23/OMJQ4.png)
+![img_8.png](../images/4/img_8.png)
 
 准备安装的 `astrbot` \+ `napcat` 的容器编排如下。
 
@@ -86,19 +86,19 @@ services:
 
 我在中国成都的内地服务器中从 1Panel 的应用商城安装，底层仍然是容器编排，暴露出的信息如下
 
-![OMzAQ.png](https://a1.ax1x.com/2026/08/23/OMzAQ.png)
+![img_9.png](../images/4/img_9.png)
 
-![OMdEJ.png](https://a1.ax1x.com/2026/08/23/OMdEJ.png)
+![img_11.png](../images/4/img_10.png)
 
 拉取的实时网络:
 
-![OMxzK.png](https://a1.ax1x.com/2026/08/23/OMxzK.png)
+![img_3.png](../images/4/img_3.png)
 
 可以看到实时的网速只有 75KB 每秒左右，很慢
 
 但是拉取其他的镜像，比如 nacos
 
-![OMT1Z.png](https://a1.ax1x.com/2026/08/23/OMT1Z.png)
+![img.png](../images/4/img.png)
 
 速度就是正常的 10MB/s。因此应该不是成都服务器的问题（但是我服务器不是只有 20M 吗？服务器购买的时候的带宽，应该是指的出口带宽，入口带宽应该是动态的。但根据[阿里云官方文档](https://help.aliyun.com/zh/ecs/user-guide/network-bandwidth)，出口带宽理论应该与入口带宽保持一致，下限为 20 Mbps）
 
@@ -106,19 +106,17 @@ services:
 
 手动运行 `docker compose pull` 命令拉取镜像
 
-![OMc8c.png](https://a1.ax1x.com/2026/08/23/OMc8c.png)
+![img_1.png](../images/4/img_1.png)
 
-![OM03O.png](https://a1.ax1x.com/2026/08/23/OM03O.png)
+![img_2.png](../images/4/img_2.png)
 
 12\.05 MB/s，拉取速度一切正常
 
 会不会是两台服务器之间通信的问题？在此使用 iperf3 进行服务器间测速：
 
-![OM2om.png](https://a1.ax1x.com/2026/08/23/OM2om.png)
+![img_4.png](../images/4/img_4.png)![OM2om.png](https://a1.ax1x.com/2026/08/23/OM2om.png)
 
 可见两台服务器之间的连接速度是一切正常的，达到了（甚至超过了）理论峰值速度。因此理论上应该不是两台服务器之间的通信速率问题。
-
-
 
 那可能是 1panel 面板的问题。在此之前， 1panel 面板在我的理解中一直是依赖 docker，通过 `Docker compose `编排安装的应用。有没有可能它在里面添加了自己的小巧思，修改了部分逻辑呢？
 感谢万能的 [chatgpt](https://chatgpt.com/share/6a82c7e6-d32c-83ea-91e6-66227023ddc7) ，直接阅读 1panel 面板的源码和 pr 分析相关的信息，让我这个完全不会 go 语言的也能完成分析
@@ -286,7 +284,7 @@ curl -s \
 
 找到对应的 layer
 
-![OMXKl.png](https://a1.ax1x.com/2026/08/23/OMXKl.png)
+![img_5.png](../images/4/img_5.png)
 
 使用指令进行手动下载
 
@@ -320,11 +318,7 @@ curl -L \
 
 在本地环境直接挂梯从 dockerhub 拉取，测试10次速率恒定，都是稳定跑慢速
 
-
-
 感觉可能不是拉取问题，而是涉及到 tcp 网络连接，但是当前的精力不足可能得过段时间再继续了，目前服务器中仍然在跑定时脚本收集数据
-
-
 
 ## Docker 缓存
 
@@ -334,7 +328,7 @@ curl -L \
 
 Docker 默认的 `content store`存放位置在 `/var/lib/containerd/io.containerd.content.v1.content`
 
-[![OMvgp.png](https://a1.ax1x.com/2026/08/23/OMvgp.png)](https://imgse.com/i/OMvgp)
+![img_6.png](../images/4/img_6.png)
 
 作为测试用途，我必须清理掉 content store 的缓存。但是官方似乎并没有给出一个单独的清理方案
 
