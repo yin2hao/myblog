@@ -15,11 +15,11 @@ tags: docker
 
 1Panel 面板官方提供了一个应用商城。该应用商城分为两个部分，一个是官方提供的应用，另外一个部分是可以从本地的目录中同步应用。鉴于官方提供的应用较少且覆盖不完整，我配置了[第三方应用商城](https://github.com/QYG2297248353/appstore-1panel)以及个人的 Docker Compose 编排，每天定时更新。
 
-![img_7.png](../images/4/img_7.png)
+![img_7.png](https://picgocloud.com/m/7d4516bc-1f35-4a50-bf4a-b73a1859c147.png)
 
 由于新买的服务器在中国成都，受到网络条件制约，目前国内主流的 Docker 镜像源要么收费，要么相对不稳定，因此，我在位于吉隆坡的服务器 B 使用 Docker 官方的 [Registry](https://hub.docker.com/_/registry) 搭建了简单的 Docker 镜像源，当接到拉取请求时，吉隆坡的服务器先从 DockerHub 拉取镜像到本地，再发送给请求者，镜像本机缓存 24 小时。
 
-![img_8.png](../images/4/img_8.png)
+![img_8.png](https://picgocloud.com/m/174f2199-8f3e-4f2c-8abf-69c24f94c8a5.png)
 
 准备安装的 `astrbot` \+ `napcat` 的容器编排如下。
 
@@ -86,19 +86,19 @@ services:
 
 我在中国成都的内地服务器中从 1Panel 的应用商城安装，底层仍然是容器编排，暴露出的信息如下
 
-![img_9.png](../images/4/img_9.png)
+![img_9.png](https://picgocloud.com/m/2936595e-25cf-4d4e-b021-804b3646d678.png)
 
-![img_11.png](../images/4/img_10.png)
+![img_11.png](https://picgocloud.com/m/547f1b71-d6ef-4f90-8985-f163c4310e2c.png)
 
 拉取的实时网络:
 
-![img_3.png](../images/4/img_3.png)
+![img_3.png](https://picgocloud.com/m/b90c4245-1e85-4602-88f1-ff7c7b781731.png)
 
 可以看到实时的网速只有 75KB 每秒左右，很慢
 
 但是拉取其他的镜像，比如 nacos
 
-![img.png](../images/4/img.png)
+![img.png](https://picgocloud.com/m/98c879f7-1700-4d98-808d-3cff112159a9.png)
 
 速度就是正常的 10MB/s。因此应该不是成都服务器的问题（但是我服务器不是只有 20M 吗？服务器购买的时候的带宽，应该是指的出口带宽，入口带宽应该是动态的。但根据[阿里云官方文档](https://help.aliyun.com/zh/ecs/user-guide/network-bandwidth)，出口带宽理论应该与入口带宽保持一致，下限为 20 Mbps）
 
@@ -106,15 +106,15 @@ services:
 
 手动运行 `docker compose pull` 命令拉取镜像
 
-![img_1.png](../images/4/img_1.png)
+![img_1.png](https://picgocloud.com/m/892594bd-75b3-4a7c-892c-852ca0793768.png)
 
-![img_2.png](../images/4/img_2.png)
+![img_2.png](https://picgocloud.com/m/2089324e-730f-4403-abc7-64cdafdc8d44.png)
 
 12\.05 MB/s，拉取速度一切正常
 
 会不会是两台服务器之间通信的问题？在此使用 iperf3 进行服务器间测速：
 
-![img_4.png](../images/4/img_4.png)![OM2om.png](https://a1.ax1x.com/2026/08/23/OM2om.png)
+![img_4.png](https://picgocloud.com/m/9efb7af4-c6e8-457a-84b0-d6b56967cb86.png)![OM2om.png](https://a1.ax1x.com/2026/08/23/OM2om.png)
 
 可见两台服务器之间的连接速度是一切正常的，达到了（甚至超过了）理论峰值速度。因此理论上应该不是两台服务器之间的通信速率问题。
 
@@ -284,7 +284,7 @@ curl -s \
 
 找到对应的 layer
 
-![img_5.png](../images/4/img_5.png)
+![img_5.png](https://picgocloud.com/m/2b1f76ee-cc73-4f29-880e-0059107799ef.png)
 
 使用指令进行手动下载
 
@@ -328,7 +328,7 @@ curl -L \
 
 Docker 默认的 `content store`存放位置在 `/var/lib/containerd/io.containerd.content.v1.content`
 
-![img_6.png](../images/4/img_6.png)
+![img_6.png](https://picgocloud.com/m/4cb510c7-309f-43d7-a9e1-be57e114f5c8.png)
 
 作为测试用途，我必须清理掉 content store 的缓存。但是官方似乎并没有给出一个单独的清理方案
 

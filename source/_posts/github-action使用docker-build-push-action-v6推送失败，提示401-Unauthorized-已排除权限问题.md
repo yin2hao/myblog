@@ -198,7 +198,7 @@ docker hub官方我没办法，且社区没有看到有明确的帖子讨论这�
 
 如实验结果所示，在登录工作流运行之前，Action Runner容器中就已经存在了一份`config.json`文件，并且`config.json`文件中存在一个`PAT`。查找资料后，感觉可能是因为这个的原因
 
-![image\.png](../images/5/img.png)
+![image\.png](https://picgocloud.com/m/acdde270-6854-4a44-be7f-011992236168.png)
 
 
 
@@ -406,7 +406,7 @@ else if host == "docker.io" {
 
 - 登出时：`docker logout docker.io`成功\(实际失败\)，尝试删除`docker.io`，但不存在
 
-![PixPin\_2026\-09\-23\_13\-03\-25\.gif](../images/5/gif.gif)
+![PixPin\_2026\-09\-23\_13\-03\-25\.gif](https://picgocloud.com/m/6e319499-fefe-4ce3-b083-51cee0848d74.gif)
 
 该问题已提交[pr](https://github.com/docker/cli/pull/7327)，会被合并吗？
 
