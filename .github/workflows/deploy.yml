@@ -4,10 +4,14 @@ on:
   push:
     branches:
       - master
-  workflow_dispatch: # 支持手动触发
+  workflow_dispatch:
 
 permissions:
   contents: write
+
+concurrency:
+  group: hexo-deploy-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
   build-and-deploy:
@@ -16,18 +20,43 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          # 拉取完整历史，确保 hexo 生成正确
           fetch-depth: 0
+          persist-credentials: true
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
           cache-dependency-path: package-lock.json
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Upload local images and rewrite Markdown
+        env:
+          PICGO_CLOUD_TOKEN: ${{ secrets.PICGO_CLOUD_TOKEN }}
+        run: python scripts/upload_markdown_images.py
+
+      - name: Commit updated Markdown
+        run: |
+          if git diff --quiet -- source/; then
+            echo 'No Markdown modifications to commit'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -u -- source
+          if git diff --cached --quiet; then
+            exit 0
+          fi
+          git commit -m 'docs: 将文章本地图片链接替换为 PicGo Cloud 链接'
+          git push origin HEAD:master
 
       - name: Build site
         run: npm run build
