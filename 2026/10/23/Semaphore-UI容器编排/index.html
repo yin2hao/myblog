@@ -1,0 +1,318 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Semaphore UI 容器编排 | yin2hao's Blog</title><meta name="author" content="yin2hao"><meta name="copyright" content="yin2hao"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="Semaphore UI 可以在浏览器中运行 Ansible 剧本和自动化脚本。下面使用官方镜像和 SQLite，适合个人服务器上的单实例部署，无需额外运行数据库容器。 宿主机需要安装 Docker Engine 和 Docker Compose。本文命令在 Linux 服务器上执行，镜像固定为 v2.19.12。 容器编排创建部署目录，后续命令都在这个目录执行： 12mkdir -p &#x2F;opt&#x2F;">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Semaphore UI 容器编排">
+<meta property="og:url" content="https://blog.yin2hao.dev/2026/10/23/Semaphore-UI%E5%AE%B9%E5%99%A8%E7%BC%96%E6%8E%92/index.html">
+<meta property="og:site_name" content="yin2hao&#39;s Blog">
+<meta property="og:description" content="Semaphore UI 可以在浏览器中运行 Ansible 剧本和自动化脚本。下面使用官方镜像和 SQLite，适合个人服务器上的单实例部署，无需额外运行数据库容器。 宿主机需要安装 Docker Engine 和 Docker Compose。本文命令在 Linux 服务器上执行，镜像固定为 v2.19.12。 容器编排创建部署目录，后续命令都在这个目录执行： 12mkdir -p &#x2F;opt&#x2F;">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-10-23T11:10:35.000Z">
+<meta property="article:modified_time" content="2026-10-23T11:15:45.444Z">
+<meta property="article:author" content="yin2hao">
+<meta property="article:tag" content="Ansible">
+<meta property="article:tag" content="Semaphore UI">
+<meta property="article:tag" content="docker">
+<meta name="twitter:card" content="summary"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Semaphore UI 容器编排",
+  "url": "https://blog.yin2hao.dev/2026/10/23/Semaphore-UI%E5%AE%B9%E5%99%A8%E7%BC%96%E6%8E%92/",
+  "image": "",
+  "datePublished": "2026-10-23T11:10:35.000Z",
+  "dateModified": "2026-10-23T11:15:45.444Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "yin2hao",
+      "url": "https://blog.yin2hao.dev"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://blog.yin2hao.dev/2026/10/23/Semaphore-UI%E5%AE%B9%E5%99%A8%E7%BC%96%E6%8E%92/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=5.7.0"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.3.1/css/all.min.css"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        const data = { value }
+
+        if (ttl != null) {
+          data.expiry = Date.now() + ttl * 86400000
+        }
+
+        localStorage.setItem(key, JSON.stringify(data))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return
+
+        try {
+          const data = JSON.parse(itemStr)
+
+          if (data.expiry && Date.now() > data.expiry) {
+            localStorage.removeItem(key)
+            return
+          }
+
+          return data.value
+        } catch {
+          localStorage.removeItem(key)
+        }
+      }
+    }
+
+    const scriptCache = new Map()
+    const cssCache = new Map()
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => {
+        if (scriptCache.has(url)) {
+          return scriptCache.get(url)
+        }
+
+        const promise = new Promise((resolve, reject) => {
+          const script = document.createElement('script')
+
+          script.src = url
+          script.async = true
+
+          for (const key in attr) {
+            script.setAttribute(key, attr[key])
+          }
+
+          script.onload = resolve
+          script.onerror = reject
+
+          document.head.appendChild(script)
+        })
+
+        scriptCache.set(url, promise)
+
+        return promise
+      },
+      getCSS: (url, id) => {
+        if (cssCache.has(url)) {
+          return cssCache.get(url)
+        }
+
+        const promise = new Promise((resolve, reject) => {
+          const link = document.createElement('link')
+
+          link.rel = 'stylesheet'
+          link.href = url
+
+          if (id) {
+            link.id = id
+          }
+
+          link.onload = resolve
+          link.onerror = reject
+
+          document.head.appendChild(link)
+        })
+
+        cssCache.set(url, promise)
+
+        return promise
+      },
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!false && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const metaThemeColor = document.querySelector('meta[name="theme-color"]')
+      const activateDarkMode = () => {
+        document.documentElement.dataset.theme = 'dark'
+        if (metaThemeColor !== null) {
+          metaThemeColor.setAttribute('content', '#0d0d0d')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.dataset.theme = 'light'
+        if (metaThemeColor !== null) {
+          metaThemeColor.setAttribute('content', '#ffffff')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'null',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.13.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: false,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Semaphore UI 容器编排',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><meta name="generator" content="Hexo 8.1.2"></head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/null" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">7</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">3</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">0</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">yin2hao's Blog</span></a><a class="nav-page-title" href="/"><span class="site-name">Semaphore UI 容器编排</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 归档</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">Semaphore UI 容器编排</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-10-23T11:10:35.000Z" title="发表于 2026-10-23 19:10:35">2026-10-23</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-10-23T11:15:45.444Z" title="更新于 2026-10-23 19:15:45">2026-10-23</time></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="busuanzi_value_page_pv"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><p>Semaphore UI 可以在浏览器中运行 Ansible 剧本和自动化脚本。下面使用官方镜像和 SQLite，适合个人服务器上的单实例部署，无需额外运行数据库容器。</p>
+<p>宿主机需要安装 Docker Engine 和 Docker Compose。本文命令在 Linux 服务器上执行，镜像固定为 <code>v2.19.12</code>。</p>
+<h2 id="容器编排"><a href="#容器编排" class="headerlink" title="容器编排"></a>容器编排</h2><p>创建部署目录，后续命令都在这个目录执行：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">mkdir</span> -p /opt/semaphore</span><br><span class="line"><span class="built_in">cd</span> /opt/semaphore</span><br></pre></td></tr></table></figure>
+
+<p>新建 <code>compose.yaml</code>：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">services:</span></span><br><span class="line">  <span class="attr">semaphore:</span></span><br><span class="line">    <span class="attr">image:</span> <span class="string">semaphoreui/semaphore:v2.19.12</span></span><br><span class="line">    <span class="attr">restart:</span> <span class="string">unless-stopped</span></span><br><span class="line">    <span class="attr">ports:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">&quot;$&#123;SEMAPHORE_PORT:-3000&#125;:3000&quot;</span></span><br><span class="line">    <span class="attr">environment:</span></span><br><span class="line">      <span class="attr">TZ:</span> <span class="string">Asia/Shanghai</span></span><br><span class="line">      <span class="attr">SEMAPHORE_DB_DIALECT:</span> <span class="string">sqlite</span></span><br><span class="line">      <span class="attr">SEMAPHORE_DB_PATH:</span> <span class="string">/var/lib/semaphore</span></span><br><span class="line">      <span class="attr">SEMAPHORE_ADMIN:</span> <span class="string">admin</span></span><br><span class="line">      <span class="attr">SEMAPHORE_ADMIN_NAME:</span> <span class="string">Admin</span></span><br><span class="line">      <span class="attr">SEMAPHORE_ADMIN_EMAIL:</span> <span class="string">admin@localhost</span></span><br><span class="line">      <span class="attr">SEMAPHORE_ADMIN_PASSWORD:</span> <span class="string">$&#123;SEMAPHORE_ADMIN_PASSWORD:?请在</span> <span class="string">.env</span> <span class="string">中设置管理员密码&#125;</span></span><br><span class="line">      <span class="attr">SEMAPHORE_ACCESS_KEY_ENCRYPTION:</span> <span class="string">$&#123;SEMAPHORE_ACCESS_KEY_ENCRYPTION:?请在</span> <span class="string">.env</span> <span class="string">中设置加密密钥&#125;</span></span><br><span class="line">    <span class="attr">volumes:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">semaphore-data:/var/lib/semaphore</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">semaphore-config:/etc/semaphore</span></span><br><span class="line"></span><br><span class="line"><span class="attr">volumes:</span></span><br><span class="line">  <span class="attr">semaphore-data:</span></span><br><span class="line">  <span class="attr">semaphore-config:</span></span><br></pre></td></tr></table></figure>
+
+<p><code>semaphore-data</code> 保存 SQLite 数据库，<code>semaphore-config</code> 保存生成的配置文件。重建容器时，Docker 会继续使用这两个命名卷。保持部署目录名称不变，避免 Compose 创建另一组卷。</p>
+<h2 id="设置密码和密钥"><a href="#设置密码和密钥" class="headerlink" title="设置密码和密钥"></a>设置密码和密钥</h2><p>运行下面的命令，生成随机的 32 字节加密密钥，并将输出完整保存：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">head</span> -c32 /dev/urandom | <span class="built_in">base64</span></span><br></pre></td></tr></table></figure>
+
+<p>在 <code>compose.yaml</code> 旁新建 <code>.env</code>，填写管理员密码和刚生成的密钥：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">SEMAPHORE_PORT=3000</span><br><span class="line">SEMAPHORE_ADMIN_PASSWORD=</span><br><span class="line">SEMAPHORE_ACCESS_KEY_ENCRYPTION=</span><br></pre></td></tr></table></figure>
+
+<p>密码可用单引号包裹，避免其中的 <code>$</code> 等字符被 Compose 插值。密码或密钥留空时，Compose 会提示缺少配置并停止启动。</p>
+<p>限制 <code>.env</code> 的读取权限：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">chmod</span> 600 .<span class="built_in">env</span></span><br></pre></td></tr></table></figure>
+
+<p>如果部署目录由 Git 管理，将 <code>.env</code> 加入 <code>.gitignore</code>。加密密钥用于保护数据库中的凭据，需要和数据一起备份；丢失或更换密钥后，已有凭据将无法解密。</p>
+<h2 id="启动和访问"><a href="#启动和访问" class="headerlink" title="启动和访问"></a>启动和访问</h2><p>先检查配置，再启动服务并查看日志：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">docker compose config --quiet</span><br><span class="line">docker compose up -d</span><br><span class="line">docker compose logs --<span class="built_in">tail</span>=100 semaphore</span><br></pre></td></tr></table></figure>
+
+<p>在浏览器中访问 <code>http://服务器IP:3000</code>，使用 <code>admin</code> 和 <code>.env</code> 中填写的密码登录。如果修改了 <code>SEMAPHORE_PORT</code>，访问地址也要使用对应端口。</p>
+<p>管理员环境变量用于首次初始化。初始化完成后，在 Semaphore UI 中修改密码；修改 <code>.env</code> 中的初始密码不会重置已有账户。</p>
+<p>编排默认将端口发布到宿主机的所有网卡。公网使用时应配置 HTTPS 反向代理并限制端口访问。如果反向代理直接运行在宿主机上，可将端口映射改为 <code>127.0.0.1:3000:3000</code>。使用域名访问时，在 <code>environment</code> 中增加 <code>SEMAPHORE_WEB_ROOT</code>，值填写完整的访问地址。</p>
+<h2 id="停止和升级"><a href="#停止和升级" class="headerlink" title="停止和升级"></a>停止和升级</h2><p>停止并删除容器，保留数据卷：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker compose down</span><br></pre></td></tr></table></figure>
+
+<p>升级前先停止服务，备份两个命名卷及 <code>.env</code>。将 <code>compose.yaml</code> 中的镜像标签改为目标版本，再执行：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">docker compose pull</span><br><span class="line">docker compose up -d</span><br><span class="line">docker compose logs --<span class="built_in">tail</span>=100 semaphore</span><br></pre></td></tr></table></figure>
+
+<p><strong>不要执行 <code>docker compose down -v</code>，它会删除命名卷中的数据库和配置。</strong></p>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://semaphoreui.com/docs/getting-started">Semaphore UI 官方快速开始</a></li>
+<li><a target="_blank" rel="noopener" href="https://semaphoreui.com/docs/admin-guide/installation/docker">Semaphore UI 官方 Docker 安装说明</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/semaphoreui/semaphore/blob/v2.19.12/deployment/docker/server/server-wrapper">v2.19.12 容器启动脚本</a></li>
+<li><a target="_blank" rel="noopener" href="https://semaphoreui.com/docs/admin-guide/configuration">Semaphore UI 配置说明</a></li>
+</ul>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://blog.yin2hao.dev">yin2hao</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://blog.yin2hao.dev/2026/10/23/Semaphore-UI%E5%AE%B9%E5%99%A8%E7%BC%96%E6%8E%92/">https://blog.yin2hao.dev/2026/10/23/Semaphore-UI%E5%AE%B9%E5%99%A8%E7%BC%96%E6%8E%92/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://blog.yin2hao.dev" target="_blank">yin2hao's Blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/docker/">docker</a><a class="post-meta__tags" href="/tags/Semaphore-UI/">Semaphore UI</a><a class="post-meta__tags" href="/tags/Ansible/">Ansible</a></div><div class="post-share"><div class="social-share" data-image="/null" data-sites="facebook,x,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.6/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related full-width" href="/2026/10/19/%E7%94%A8%E6%88%B7%E9%97%AE%E9%A2%98/" title="postgresql用户问题"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">postgresql用户问题</div></div><div class="info-2"><div class="info-item-1">最近打算将现有的 PostgreSQL 数据库迁移到免费的 supabase 云数据库中，但是迁移的时候发生了问题。 原本的 PostgreSQL 放在我自己的云服务器上面，它的初始用户是通过 Docker 指定的，这个用户具备SUPERUSER权限。我一直使用的自己创建的yin2hao用户 supabase 云数据库没有给用户提供带有SUPERUSER权限的用户，而是给了一个隶属于普通用户权限的用户postgresql。登录控制台也是使用的这一个用户  我按照流程，在supabase创建用户CREATE USER yin2hao WITH PASSWORD &#39;*****&#39;，然后使用psql指令执行 sql 插入数据出错。 查看一下报错的行数，发现其都与表权限有关。 ALTER TABLE public.account_api_keys OWNER TO yin2hao; ALTER TABLE public.agent_conversation_messages OWNER TO yin2hao; 查询资料得知，postgresql 的用户间权限分为ADMIN ...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2026/09/18/github-action%E4%BD%BF%E7%94%A8docker-build-push-action-v6%E6%8E%A8%E9%80%81%E5%A4%B1%E8%B4%A5%EF%BC%8C%E6%8F%90%E7%A4%BA401-Unauthorized-%E5%B7%B2%E6%8E%92%E9%99%A4%E6%9D%83%E9%99%90%E9%97%AE%E9%A2%98/" title="github action使用docker&#x2F;build-push-action@v6推送失败，提示401 Unauthorized,已排除权限问题"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-18</div><div class="info-item-2">github action使用docker&#x2F;build-push-action@v6推送失败，提示401 Unauthorized,已排除权限问题</div></div><div class="info-2"><div class="info-item-1">docker hub推送问题问题开始我自己的项目有一套自动构建+推送到 dockerHub 的工作流。现在我将原本的项目前后端拆分为单独的仓库，发现工作流运行出现了问题 这是我原本的工作流 123456789101112131415161718192021222324252627282930313233343536373839404142434445464748495051525354555657585960616263646566676869name: Publish frontend Docker imageon:  push:    tags:      - &#x27;*&#x27;permissions:  contents: readconcurrency:  group: docker-publish-$&#123;&#123; github.repository &#125;&#125;-$&#123;&#123; github.ref &#125;&#125;  cancel-in-progress: falsejobs:  normalize-version:...</div></div></div></a><a class="pagination-related" href="/2026/08/23/docker-pull%E5%91%BD%E4%BB%A4%E9%80%9A%E8%BF%87%E9%95%9C%E5%83%8F%E6%BA%90%E4%B8%8B%E8%BD%BD%E5%81%B6%E5%8F%91%E8%BF%87%E6%85%A2%E9%97%AE%E9%A2%98/" title="docker pull命令通过镜像源下载偶发过慢问题"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-08-23</div><div class="info-item-2">docker pull命令通过镜像源下载偶发过慢问题</div></div><div class="info-2"><div class="info-item-1">背景现在有两台服务器，一台是位于中国成都内地的 ESC 实例 A(20M带宽) 另外一台是位于吉隆坡的轻量应用服务器 B （峰值200M带宽） 在这之前，我比较喜欢使用 1Panel 面板可视化管理服务器。1Panel 面板是基于 Docker 的管理面板，它的应用体系基本依靠 Docker Compose。 1Panel 面板官方提供了一个应用商城。该应用商城分为两个部分，一个是官方提供的应用，另外一个部分是可以从本地的目录中同步应用。鉴于官方提供的应用较少且覆盖不完整，我配置了第三方应用商城以及个人的 Docker Compose 编排，每天定时更新。  由于新买的服务器在中国成都，受到网络条件制约，目前国内主流的 Docker 镜像源要么收费，要么相对不稳定，因此，我在位于吉隆坡的服务器 B 使用 Docker 官方的 Registry 搭建了简单的 Docker 镜像源，当接到拉取请求时，吉隆坡的服务器先从 DockerHub 拉取镜像到本地，再发送给请求者，镜像本机缓存 24 小时。  准备安装的 astrbot + napcat 的容器编排如下。 1234567891...</div></div></div></a></div></div><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="giscus-wrap"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/null" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">yin2hao</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">7</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">3</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">0</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/yin2hao"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/yin2hao" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">欢迎来到我的博客！</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%B9%E5%99%A8%E7%BC%96%E6%8E%92"><span class="toc-number">1.</span> <span class="toc-text">容器编排</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AE%BE%E7%BD%AE%E5%AF%86%E7%A0%81%E5%92%8C%E5%AF%86%E9%92%A5"><span class="toc-number">2.</span> <span class="toc-text">设置密码和密钥</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%90%AF%E5%8A%A8%E5%92%8C%E8%AE%BF%E9%97%AE"><span class="toc-number">3.</span> <span class="toc-text">启动和访问</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%81%9C%E6%AD%A2%E5%92%8C%E5%8D%87%E7%BA%A7"><span class="toc-number">4.</span> <span class="toc-text">停止和升级</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E8%80%83%E8%B5%84%E6%96%99"><span class="toc-number">5.</span> <span class="toc-text">参考资料</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/23/Semaphore-UI%E5%AE%B9%E5%99%A8%E7%BC%96%E6%8E%92/" title="Semaphore UI 容器编排">Semaphore UI 容器编排</a><time datetime="2026-10-23T11:10:35.000Z" title="发表于 2026-10-23 19:10:35">2026-10-23</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/19/%E7%94%A8%E6%88%B7%E9%97%AE%E9%A2%98/" title="postgresql用户问题">postgresql用户问题</a><time datetime="2026-10-19T02:46:57.000Z" title="发表于 2026-10-19 10:46:57">2026-10-19</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/09/18/github-action%E4%BD%BF%E7%94%A8docker-build-push-action-v6%E6%8E%A8%E9%80%81%E5%A4%B1%E8%B4%A5%EF%BC%8C%E6%8F%90%E7%A4%BA401-Unauthorized-%E5%B7%B2%E6%8E%92%E9%99%A4%E6%9D%83%E9%99%90%E9%97%AE%E9%A2%98/" title="github action使用docker/build-push-action@v6推送失败，提示401 Unauthorized,已排除权限问题">github action使用docker/build-push-action@v6推送失败，提示401 Unauthorized,已排除权限问题</a><time datetime="2026-09-18T13:54:13.000Z" title="发表于 2026-09-18 21:54:13">2026-09-18</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/23/docker-pull%E5%91%BD%E4%BB%A4%E9%80%9A%E8%BF%87%E9%95%9C%E5%83%8F%E6%BA%90%E4%B8%8B%E8%BD%BD%E5%81%B6%E5%8F%91%E8%BF%87%E6%85%A2%E9%97%AE%E9%A2%98/" title="docker pull命令通过镜像源下载偶发过慢问题">docker pull命令通过镜像源下载偶发过慢问题</a><time datetime="2026-08-23T09:03:54.000Z" title="发表于 2026-08-23 17:03:54">2026-08-23</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/08/04/title/" title="前后端自动携带token校验">前后端自动携带token校验</a><time datetime="2026-08-04T08:15:58.000Z" title="发表于 2026-08-04 16:15:58">2026-08-04</time></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2026 By yin2hao</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 8.1.2</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.7.0</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="前往评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.7.0"></script><script src="/js/main.js?v=5.7.0"></script><div class="js-pjax"><script>(() => {
+  const isShuoshuo = GLOBAL_CONFIG_SITE.pageType === 'shuoshuo'
+  const option = {"mapping":"pathname","strict":1,"reactionsEnabled":1,"emitMetadata":0,"inputPosition":"top","lang":"zh-CN","loading":"lazy"}
+
+  const getGiscusTheme = theme => theme === 'dark' ? 'dark' : 'light'
+
+  const createScriptElement = config => {
+    const ele = document.createElement('script')
+    Object.entries(config).forEach(([key, value]) => {
+      ele.setAttribute(key, value)
+    })
+    return ele
+  }
+
+  const loadGiscus = (el = document, key) => {
+    const mappingConfig = isShuoshuo
+      ? { 'data-mapping': 'specific', 'data-term': key }
+      : { 'data-mapping': (option && option['data-mapping']) || 'pathname' }
+
+    const giscusConfig = {
+      src: 'https://giscus.app/client.js',
+      'data-repo': 'yin2hao/myblog',
+      'data-repo-id': 'R_kgDORF397w',
+      'data-category-id': 'DIC_kwDORF39784C_vHb',
+      'data-theme': getGiscusTheme(document.documentElement.getAttribute('data-theme')),
+      'data-reactions-enabled': '1',
+      crossorigin: 'anonymous',
+      async: true,
+      ...option,
+      ...mappingConfig
+    }
+
+    const scriptElement = createScriptElement(giscusConfig)
+
+    el.querySelector('#giscus-wrap').appendChild(scriptElement)
+
+    if (isShuoshuo) {
+      window.shuoshuoComment.destroyGiscus = () => {
+        if (el.children.length) {
+          el.innerHTML = ''
+          el.classList.add('no-comment')
+        }
+      }
+    }
+  }
+
+  const changeGiscusTheme = theme => {
+    const iframe = document.querySelector('#giscus-wrap iframe')
+    if (iframe) {
+      const message = {
+        giscus: {
+          setConfig: {
+            theme: getGiscusTheme(theme)
+          }
+        }
+      }
+      iframe.contentWindow.postMessage(message, 'https://giscus.app')
+    }
+  }
+
+  btf.addGlobalFn('themeChange', changeGiscusTheme, 'giscus')
+
+  if (isShuoshuo) {
+    'Giscus' === 'Giscus'
+      ? window.shuoshuoComment = { loadComment: loadGiscus }
+      : window.loadOtherComment = loadGiscus
+    return
+  }
+
+  if ('Giscus' === 'Giscus' || !false) {
+    if (false) btf.loadComment(document.getElementById('giscus-wrap'), loadGiscus)
+    else loadGiscus()
+  } else {
+    window.loadOtherComment = loadGiscus
+  }
+})()</script></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
