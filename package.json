@@ -27,6 +27,6 @@
     "hexo-theme-landscape": "^1.0.0"
   },
   "devDependencies": {
-    "picgo": "3.1.0"
+    "picgo": "3.2.0"
   }
 }
