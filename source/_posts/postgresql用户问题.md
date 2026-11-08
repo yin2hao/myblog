@@ -7,15 +7,11 @@ tags:
 
 最近打算将现有的 `PostgreSQL` 数据库迁移到免费的 `supabase` 云数据库中，但是迁移的时候发生了问题。
 
-
-
 原本的 `PostgreSQL` 放在我自己的云服务器上面，它的初始用户是通过 `Docker` 指定的，这个用户具备`SUPERUSER`权限。我一直使用的自己创建的`yin2hao`用户
 
 `supabase` 云数据库没有给用户提供带有`SUPERUSER`权限的用户，而是给了一个隶属于普通用户权限的用户`postgresql`。登录控制台也是使用的这一个用户
 
 ![image\.png](https://picgocloud.com/m/b9c66164-86bf-44aa-9af6-087e569f438d.png)
-
-
 
 我按照流程，在`supabase`创建用户`CREATE USER yin2hao WITH PASSWORD '*****'`，然后使用`psql`指令执行 sql 插入数据出错。
 
@@ -24,8 +20,6 @@ tags:
 `ALTER TABLE public.account_api_keys OWNER TO yin2hao;`
 
 `ALTER TABLE public.agent_conversation_messages OWNER TO yin2hao;`
-
-
 
 查询资料得知，postgresql 的用户间权限分为`ADMIN` `INHERIT` `SET`。其作用分别是：
 
@@ -39,11 +33,7 @@ tags:
 
 执行`GRANT yin2hao TO postgres WITH SET TRUE;`之后即可正常插入
 
-
-
 还遇到个小插曲，我在验证这个结论的时候，在一台全新的服务器上安装了一台全新的`PostgreSQL`，并且连接上去。但是我在 `superuser` 用户下，`CREATE USER test1 WITH CREATEROLE`，再`SET ROLE test1`进入 test1 ，在 test1 用户 `CREATE USER test2`，按理来说，这个时候 test1 和 test2 之间的 `SET` 为 `false`，不应该能够切换过去。但是实际上，如果在此时`SET ROLE test2`能够正常切换。
-
-
 
 这是因为，它的官方文档中存在一个 `session_user` 和 `current_user` ，其中`session_user`是连接的时候使用的用户，而切换用户的时候，`SET ROLE`是检查的 `session_user`。也就是说，在这个情况下，在`SET ROLE test2`的时候，它检测的是最开始的`SUPERUSER`用户对于test2的`SET`权限。
 
