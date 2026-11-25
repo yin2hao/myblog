@@ -27,7 +27,7 @@ tags:
 
 但是这个通用模板存在排版问题，最终呈现的效果是这样的：
 
-![image\.png](../images/9/image%202.png)
+![image\.png](https://picgocloud.com/m/f5732d6a-b243-4b6f-bf23-20a273455f5e.png)
 
 可以看到，模板的首尾出现了预期外的空行
 
@@ -48,11 +48,11 @@ tags:
 {{- end -}}
 ```
 
-![image\.png](../images/9/image%203.png)
+![image\.png](https://picgocloud.com/m/3108a523-adaf-43fc-9108-fa7e5795ab10.png)
 
 但是出现了一个问题，就是修改之后的通知模板无法保存。
 
-![image\.png](../images/9/image%201.png)
+![image\.png](https://picgocloud.com/m/de3ffe0b-c08d-4bce-adf6-cc49c941af60.png)
 
 而且它的前端没有显示更细节的说明
 
