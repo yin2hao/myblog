@@ -31,7 +31,7 @@ location ^~ / {
 
 但是我遇到了一个小问题：以这种方式访问的面板，面板上网页自带的终端功能无法正常使用，会直接显示 `disconnected`
 
-![image\.png](../images/12/image.png)
+![image\.png](https://picgocloud.com/m/8prdf4vz/813720f2-5153-4da0-9b4d-d0de1969c7cb.png)
 
 不用想，肯定是反向代理的某些地方出现了问题，于是查找相关资料
 
@@ -45,7 +45,7 @@ https://1panel\-dev\.github\.io/docs/v2/faq/system\_function/
 
 接下来就尝试使用 F12，看一下有没有可用的详细信息
 
-![image\.png](../images/12/image%201.png)
+![image\.png](https://picgocloud.com/m/8prdf4vz/cac578ef-1284-4285-bd10-94f00628cec0.png)
 
 可以看到，在打开终端的时候，确实是发送了一个 WebSocket 的请求，但是很遗憾，直接被中断了，并且没有任何可用的反馈信息。
 
